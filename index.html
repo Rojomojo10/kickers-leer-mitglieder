@@ -6,45 +6,49 @@
 <title>FC Kickers Leer – Mitgliederverwaltung</title>
 <style>
   :root {
-    --gruen: #1a5c2e;
-    --gruen-mid: #2d7a47;
-    --gruen-hell: #e8f5ee;
-    --gruen-rand: #b8ddc8;
-    --weiss: #ffffff;
-    --grau-0: #f8f9fa;
-    --grau-1: #f1f3f5;
-    --grau-2: #e9ecef;
-    --grau-3: #dee2e6;
-    --grau-5: #adb5bd;
-    --grau-7: #495057;
-    --grau-9: #212529;
-    --rot: #c0392b;
-    --rot-hell: #fdecea;
-    --amber: #d97706;
-    --amber-hell: #fef3c7;
-    --radius: 8px;
-    --radius-lg: 12px;
-    --shadow: 0 1px 3px rgba(0,0,0,.08);
-    --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+    --gruen: #1a5c2e; --gruen-mid: #2d7a47; --gruen-hell: #e8f5ee; --gruen-rand: #b8ddc8;
+    --weiss: #ffffff; --grau-0: #f8f9fa; --grau-1: #f1f3f5; --grau-2: #e9ecef;
+    --grau-3: #dee2e6; --grau-5: #adb5bd; --grau-7: #495057; --grau-9: #212529;
+    --rot: #c0392b; --rot-hell: #fdecea; --amber: #d97706; --amber-hell: #fef3c7;
+    --radius: 8px; --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08); --shadow-md: 0 4px 12px rgba(0,0,0,.1);
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: var(--grau-9); background: var(--grau-0); min-height: 100vh; }
 
+  /* ── LOGIN ── */
+  #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--gruen); }
+  .login-card { background: var(--weiss); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 40px; width: 100%; max-width: 380px; }
+  .login-logo { text-align: center; margin-bottom: 28px; }
+  .login-logo .badge { width: 60px; height: 60px; border-radius: 50%; background: var(--gruen); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; margin: 0 auto 12px; }
+  .login-logo h1 { font-size: 18px; font-weight: 700; color: var(--grau-9); }
+  .login-logo p { font-size: 13px; color: var(--grau-5); margin-top: 4px; }
+  .login-field { margin-bottom: 14px; }
+  .login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--grau-7); margin-bottom: 5px; }
+  .login-field input { width: 100%; height: 40px; border: 1px solid var(--grau-3); border-radius: var(--radius); padding: 0 12px; font-size: 14px; outline: none; transition: border-color .15s; }
+  .login-field input:focus { border-color: var(--gruen); box-shadow: 0 0 0 3px rgba(26,92,46,.1); }
+  .login-btn { width: 100%; height: 42px; background: var(--gruen); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: background .15s; }
+  .login-btn:hover { background: var(--gruen-mid); }
+  .login-error { background: var(--rot-hell); color: var(--rot); border-radius: var(--radius); padding: 10px 14px; font-size: 13px; margin-top: 12px; display: none; }
+
+  /* ── APP ── */
+  #appScreen { display: none; }
   .sidebar { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: var(--gruen); display: flex; flex-direction: column; z-index: 100; }
   .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,.12); }
   .sidebar-logo .badge { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 12px; }
   .sidebar-logo h1 { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.3; }
   .sidebar-logo p { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; }
-  .sync-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; margin-left: 6px; vertical-align: middle; }
-  .sync-dot.online { background: #4ade80; }
-  .sync-dot.error { background: #f87171; }
+  .sync-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #4ade80; margin-left: 6px; vertical-align: middle; }
   nav { padding: 12px 0; flex: 1; }
   nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: rgba(255,255,255,.7); font-size: 13px; font-weight: 500; cursor: pointer; border-left: 3px solid transparent; transition: all .15s; }
   nav a:hover { color: #fff; background: rgba(255,255,255,.08); }
   nav a.active { color: #fff; background: rgba(255,255,255,.12); border-left-color: #fff; }
   nav a svg { width: 16px; height: 16px; flex-shrink: 0; }
-  .sidebar-footer { padding: 12px 20px; border-top: 1px solid rgba(255,255,255,.12); font-size: 11px; color: rgba(255,255,255,.4); }
-  .sync-status { font-size: 11px; color: rgba(255,255,255,.5); padding: 8px 20px 0; }
+  .sidebar-footer { padding: 12px 20px; border-top: 1px solid rgba(255,255,255,.12); }
+  .user-info { font-size: 11px; color: rgba(255,255,255,.5); margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .logout-btn { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,.6); cursor: pointer; background: none; border: none; padding: 0; }
+  .logout-btn:hover { color: #fff; }
+  .logout-btn svg { width: 13px; height: 13px; }
 
   .main { margin-left: 220px; min-height: 100vh; }
   .topbar { background: var(--weiss); border-bottom: 1px solid var(--grau-3); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
@@ -68,7 +72,7 @@
   .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .search-wrap { position: relative; flex: 1; min-width: 180px; }
   .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--grau-5); width: 14px; height: 14px; pointer-events: none; }
-  input[type=text], input[type=email], input[type=date], input[type=number], select {
+  input[type=text], input[type=email], input[type=date], input[type=number], input[type=password], select {
     height: 36px; border: 1px solid var(--grau-3); border-radius: var(--radius); padding: 0 10px; font-size: 13px; color: var(--grau-9); background: var(--weiss); outline: none; transition: border-color .15s; width: 100%;
   }
   .search-wrap input { padding-left: 32px; }
@@ -127,7 +131,7 @@
   .sepa-item:hover { background: var(--grau-0); }
   .sepa-info { flex: 1; min-width: 0; }
   .sepa-info .nm { font-weight: 600; font-size: 13px; }
-  .sepa-info .iban { font-size: 11px; color: var(--grau-5); font-family: monospace; margin-top: 2px; }
+  .sepa-info .iban-txt { font-size: 11px; color: var(--grau-5); font-family: monospace; margin-top: 2px; }
   .sepa-betrag { font-size: 15px; font-weight: 700; text-align: right; }
   .sepa-betrag .period { font-size: 10px; font-weight: 400; color: var(--grau-5); display: block; }
 
@@ -155,173 +159,201 @@
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="badge">FCK</div>
-    <h1>FC Kickers Leer</h1>
-    <p>Mitgliederverwaltung <span class="sync-dot" id="syncDot"></span></p>
-  </div>
-  <div class="sync-status" id="syncStatus">Verbinde mit Firebase…</div>
-  <nav>
-    <a class="active" onclick="showPage('mitglieder')">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Mitglieder
-    </a>
-    <a onclick="showPage('einzug')">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-      Beitragseinzug
-    </a>
-    <a onclick="showPage('sepa')">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      SEPA-Export
-    </a>
-    <a onclick="showPage('einstellungen')">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Einstellungen
-    </a>
-  </nav>
-  <div class="sidebar-footer">Saison <span id="sidebarJahr"></span> · Firebase Sync</div>
-</aside>
-
-<main class="main">
-  <div class="topbar">
-    <h2 id="pageTitle">Mitglieder</h2>
-    <span class="year-badge" id="topbarJahr"></span>
-  </div>
-  <div class="content">
-
-    <!-- MITGLIEDER -->
-    <div class="page active" id="page-mitglieder">
-      <div class="stats" id="statsRow"></div>
-      <div class="card">
-        <div class="card-header">
-          <h3>Alle Mitglieder</h3>
-          <div class="toolbar">
-            <div class="search-wrap">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" id="searchInput" placeholder="Name oder E-Mail suchen…" oninput="renderMitglieder()">
-            </div>
-            <select id="filterKat" onchange="renderMitglieder()" style="width:160px">
-              <option value="">Alle Kategorien</option>
-              <option>Aktiv</option><option>Passiv</option><option>Jugend</option><option>Fördermitglied</option>
-            </select>
-            <select id="filterStatus" onchange="renderMitglieder()" style="width:140px">
-              <option value="">Alle Status</option>
-              <option value="bezahlt">Bezahlt</option>
-              <option value="offen">Offen</option>
-            </select>
-            <button class="btn btn-primary" onclick="openModal('neu')">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Neues Mitglied
-            </button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Mitglied</th><th>Nr.</th><th>Kategorie</th><th>Beitrag/Jahr</th><th>Status</th><th>Aktionen</th>
-            </tr></thead>
-            <tbody id="memberTable"><tr><td colspan="6"><div class="loading"><div class="spinner"></div>Lade Daten aus Firebase…</div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
+<!-- ══ LOGIN ══ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="badge">FCK</div>
+      <h1>FC Kickers Leer</h1>
+      <p>Mitgliederverwaltung · Bitte anmelden</p>
     </div>
-
-    <!-- EINZUG -->
-    <div class="page" id="page-einzug">
-      <div class="stats" id="statsRowEinzug"></div>
-      <div class="card">
-        <div class="card-header">
-          <h3>Offene Beiträge <span id="einzugJahr" style="color:var(--grau-5);font-weight:400"></span></h3>
-          <div style="display:flex;gap:8px">
-            <button class="btn" onclick="alleAlsOffen()">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.78"/></svg>
-              Neues Jahr
-            </button>
-            <button class="btn btn-primary" onclick="alleAlsBezahlt()">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              Alle eingezogen
-            </button>
-          </div>
-        </div>
-        <div id="einzugListe"></div>
-        <div class="summary-bar">
-          <div><div class="lbl">Ausstehend</div><div class="total" id="einzugSumme">0,00 €</div></div>
-          <button class="btn btn-amber" onclick="showPage('sepa')">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            SEPA-Datei erstellen
-          </button>
-        </div>
-      </div>
+    <div class="login-field">
+      <label>E-Mail</label>
+      <input type="email" id="loginEmail" placeholder="ihre@email.de" autocomplete="username">
     </div>
+    <div class="login-field">
+      <label>Passwort</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()" id="loginBtn">Anmelden</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
 
-    <!-- SEPA -->
-    <div class="page" id="page-sepa">
-      <div class="hinweis">
-        <strong>Vor dem ersten Export ausfüllen</strong>
-        Ersetzen Sie die Gläubiger-ID und prüfen Sie die Vereins-IBAN. Die XML-Datei direkt im Online-Banking der Sparkasse hochladen.
-      </div>
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-header"><h3>Vereinskonfiguration</h3></div>
-        <div class="card-body">
-          <div class="field-row">
-            <div class="field"><label>Vereinsname</label><input type="text" id="cfgName" value="FC Kickers Leer e.V."></div>
-            <div class="field"><label>Gläubiger-ID</label><input type="text" id="cfgGlId" value="DE98ZZZ09999999999"><div class="field-hint">Bei der Bundesbank beantragen</div></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label>Vereins-IBAN</label><input type="text" id="cfgIban" value="DE12500105170648489890"></div>
-            <div class="field"><label>Vereins-BIC</label><input type="text" id="cfgBic" value="NOLADE21LER"></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label>Fälligkeitsdatum</label><input type="date" id="cfgFaellig"></div>
-            <div class="field"><label>Einzugsart</label>
-              <select id="cfgSeqTp">
-                <option value="RCUR">Folgelastschrift (RCUR) – Standard</option>
-                <option value="FRST">Erstlastschrift (FRST)</option>
+<!-- ══ APP ══ -->
+<div id="appScreen">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="badge">FCK</div>
+      <h1>FC Kickers Leer</h1>
+      <p>Mitgliederverwaltung <span class="sync-dot"></span></p>
+    </div>
+    <nav>
+      <a class="active" onclick="showPage('mitglieder')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Mitglieder
+      </a>
+      <a onclick="showPage('einzug')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Beitragseinzug
+      </a>
+      <a onclick="showPage('sepa')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        SEPA-Export
+      </a>
+      <a onclick="showPage('einstellungen')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Einstellungen
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info" id="userEmail"></div>
+      <button class="logout-btn" onclick="doLogout()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Abmelden
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <h2 id="pageTitle">Mitglieder</h2>
+      <span class="year-badge" id="topbarJahr"></span>
+    </div>
+    <div class="content">
+
+      <!-- MITGLIEDER -->
+      <div class="page active" id="page-mitglieder">
+        <div class="stats" id="statsRow"></div>
+        <div class="card">
+          <div class="card-header">
+            <h3>Alle Mitglieder</h3>
+            <div class="toolbar">
+              <div class="search-wrap">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="searchInput" placeholder="Name oder E-Mail suchen…" oninput="renderMitglieder()">
+              </div>
+              <select id="filterKat" onchange="renderMitglieder()" style="width:160px">
+                <option value="">Alle Kategorien</option>
+                <option>Aktiv</option><option>Passiv</option><option>Jugend</option><option>Fördermitglied</option>
               </select>
+              <select id="filterStatus" onchange="renderMitglieder()" style="width:140px">
+                <option value="">Alle Status</option>
+                <option value="bezahlt">Bezahlt</option>
+                <option value="offen">Offen</option>
+              </select>
+              <button class="btn btn-primary" onclick="openModal('neu')">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Neues Mitglied
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Mitglied</th><th>Nr.</th><th>Kategorie</th><th>Beitrag/Jahr</th><th>Status</th><th>Aktionen</th></tr></thead>
+              <tbody id="memberTable"><tr><td colspan="6"><div class="loading"><div class="spinner"></div>Lade Daten…</div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- EINZUG -->
+      <div class="page" id="page-einzug">
+        <div class="stats" id="statsRowEinzug"></div>
+        <div class="card">
+          <div class="card-header">
+            <h3>Offene Beiträge <span id="einzugJahr" style="color:var(--grau-5);font-weight:400"></span></h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn" onclick="alleAlsOffen()">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.78"/></svg>
+                Neues Jahr
+              </button>
+              <button class="btn btn-primary" onclick="alleAlsBezahlt()">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Alle eingezogen
+              </button>
+            </div>
+          </div>
+          <div id="einzugListe"></div>
+          <div class="summary-bar">
+            <div><div class="lbl">Ausstehend</div><div class="total" id="einzugSumme">0,00 €</div></div>
+            <button class="btn btn-amber" onclick="showPage('sepa')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              SEPA-Datei erstellen
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEPA -->
+      <div class="page" id="page-sepa">
+        <div class="hinweis">
+          <strong>Vor dem ersten Export ausfüllen</strong>
+          Ersetzen Sie die Gläubiger-ID und prüfen Sie die Vereins-IBAN. Die XML-Datei direkt im Online-Banking der Sparkasse hochladen.
+        </div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header"><h3>Vereinskonfiguration</h3></div>
+          <div class="card-body">
+            <div class="field-row">
+              <div class="field"><label>Vereinsname</label><input type="text" id="cfgName" value="FC Kickers Leer e.V."></div>
+              <div class="field"><label>Gläubiger-ID</label><input type="text" id="cfgGlId" value="DE98ZZZ09999999999"><div class="field-hint">Bei der Bundesbank beantragen</div></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Vereins-IBAN</label><input type="text" id="cfgIban" value="DE12500105170648489890"></div>
+              <div class="field"><label>Vereins-BIC</label><input type="text" id="cfgBic" value="NOLADE21LER"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Fälligkeitsdatum</label><input type="date" id="cfgFaellig"></div>
+              <div class="field"><label>Einzugsart</label>
+                <select id="cfgSeqTp">
+                  <option value="RCUR">Folgelastschrift (RCUR) – Standard</option>
+                  <option value="FRST">Erstlastschrift (FRST)</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <h3>Mitglieder im Einzug (<span id="sepaAnzahl">0</span>)</h3>
-          <div style="display:flex;gap:8px">
-            <button class="btn" onclick="downloadCSV()">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              Als CSV
-            </button>
-            <button class="btn btn-primary" onclick="exportSEPA()">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              SEPA XML herunterladen
-            </button>
+        <div class="card">
+          <div class="card-header">
+            <h3>Mitglieder im Einzug (<span id="sepaAnzahl">0</span>)</h3>
+            <div style="display:flex;gap:8px">
+              <button class="btn" onclick="downloadCSV()">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Als CSV
+              </button>
+              <button class="btn btn-primary" onclick="exportSEPA()">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                SEPA XML herunterladen
+              </button>
+            </div>
+          </div>
+          <div id="sepaListe"></div>
+          <div class="summary-bar">
+            <div><div class="lbl">Gesamtbetrag</div><div class="total" id="sepaSumme">0,00 €</div></div>
+            <div style="font-size:11px;color:var(--grau-5)">mind. 2 Bankarbeitstage vor Fälligkeit einreichen</div>
           </div>
         </div>
-        <div id="sepaListe"></div>
-        <div class="summary-bar">
-          <div><div class="lbl">Gesamtbetrag</div><div class="total" id="sepaSumme">0,00 €</div></div>
-          <div style="font-size:11px;color:var(--grau-5)">mind. 2 Bankarbeitstage vor Fälligkeit einreichen</div>
-        </div>
       </div>
-    </div>
 
-    <!-- EINSTELLUNGEN -->
-    <div class="page" id="page-einstellungen">
-      <div class="card">
-        <div class="card-header"><h3>Beitragssätze</h3></div>
-        <div class="card-body">
-          <div class="field-row">
-            <div class="field"><label>Aktiv (€/Jahr)</label><input type="number" id="setBeitragAktiv" value="120"></div>
-            <div class="field"><label>Passiv (€/Jahr)</label><input type="number" id="setBeitragPassiv" value="60"></div>
-            <div class="field"><label>Jugend (€/Jahr)</label><input type="number" id="setBeitragJugend" value="36"></div>
-            <div class="field"><label>Fördermitglied (€/Jahr)</label><input type="number" id="setBeitragFoerder" value="180"></div>
+      <!-- EINSTELLUNGEN -->
+      <div class="page" id="page-einstellungen">
+        <div class="card">
+          <div class="card-header"><h3>Beitragssätze</h3></div>
+          <div class="card-body">
+            <div class="field-row">
+              <div class="field"><label>Aktiv (€/Jahr)</label><input type="number" id="setBeitragAktiv" value="120"></div>
+              <div class="field"><label>Passiv (€/Jahr)</label><input type="number" id="setBeitragPassiv" value="60"></div>
+              <div class="field"><label>Jugend (€/Jahr)</label><input type="number" id="setBeitragJugend" value="36"></div>
+              <div class="field"><label>Fördermitglied (€/Jahr)</label><input type="number" id="setBeitragFoerder" value="180"></div>
+            </div>
+            <button class="btn btn-primary" onclick="beitraegeSpeichern()">Speichern</button>
           </div>
-          <button class="btn btn-primary" onclick="beitraegeSpeichern()">Speichern</button>
         </div>
       </div>
+
     </div>
-  </div>
-</main>
+  </main>
+</div>
 
 <!-- MODAL NEU -->
 <div class="modal-overlay" id="modal-neu">
@@ -405,79 +437,106 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getDatabase, ref, onValue, push, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAyWwFs2a9Fv9hVu-mDbfsKUDBGNiwKewg",
-  authDomain: "kickers-a6150.firebaseapp.com",
-  databaseURL: "https://kickers-a6150-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "kickers-a6150",
-  storageBucket: "kickers-a6150.firebasestorage.app",
-  messagingSenderId: "544380591297",
-  appId: "1:544380591297:web:5baea79369277aca45c840"
+  apiKey: "AIzaSyDUBGr0FGMubEvUcgPtQYiei3CTnRD31R8",
+  authDomain: "kickers-a6150-9ea35.firebaseapp.com",
+  databaseURL: "https://kickers-a6150-9ea35-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "kickers-a6150-9ea35",
+  storageBucket: "kickers-a6150-9ea35.firebasestorage.app",
+  messagingSenderId: "179137062282",
+  appId: "1:179137062282:web:02462dc0d2261e950bd473"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const membersRef = ref(db, 'mitglieder');
-const configRef  = ref(db, 'config');
+const auth = getAuth(app);
+const db   = getDatabase(app);
 
 const JAHR = new Date().getFullYear();
-document.getElementById('sidebarJahr').textContent = JAHR;
 document.getElementById('topbarJahr').textContent = 'Saison ' + JAHR;
 document.getElementById('einzugJahr').textContent = JAHR;
 
 const FARBEN = ['#1a5c2e','#185FA5','#6d3f99','#b45309','#be3a3a','#0d7490','#166534'];
 let beitraege = {Aktiv:120,Passiv:60,Jugend:36,'Fördermitglied':180};
 let members = {};
+let membersRef, configRef;
 
-// Sync-Status
-function setSyncStatus(state) {
-  const dot = document.getElementById('syncDot');
-  const txt = document.getElementById('syncStatus');
-  dot.className = 'sync-dot ' + state;
-  if(state === 'online') txt.textContent = 'Live-Sync aktiv';
-  else if(state === 'error') txt.textContent = 'Verbindungsfehler';
-  else txt.textContent = 'Verbinde…';
-}
+// ── AUTH ──
+window.doLogin = async function() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPassword').value;
+  const btn   = document.getElementById('loginBtn');
+  const err   = document.getElementById('loginError');
+  err.style.display = 'none';
+  btn.textContent = 'Anmelden…'; btn.disabled = true;
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+  } catch(e) {
+    let msg = 'Anmeldung fehlgeschlagen.';
+    if(e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') msg = 'E-Mail oder Passwort falsch.';
+    else if(e.code === 'auth/too-many-requests') msg = 'Zu viele Versuche. Bitte kurz warten.';
+    else if(e.code === 'auth/invalid-email') msg = 'Ungültige E-Mail-Adresse.';
+    err.textContent = msg; err.style.display = 'block';
+    btn.textContent = 'Anmelden'; btn.disabled = false;
+  }
+};
 
-// Realtime listener — aktualisiert die App bei jeder Änderung in Firebase
-onValue(membersRef, (snapshot) => {
-  members = snapshot.val() || {};
-  setSyncStatus('online');
-  renderAll();
-}, (error) => {
-  setSyncStatus('error');
-  toast('Firebase-Fehler: ' + error.message);
-});
+window.doLogout = async function() {
+  await signOut(auth);
+};
 
-onValue(configRef, (snapshot) => {
-  const cfg = snapshot.val();
-  if(cfg && cfg.beitraege) {
-    beitraege = cfg.beitraege;
-    document.getElementById('setBeitragAktiv').value = beitraege.Aktiv;
-    document.getElementById('setBeitragPassiv').value = beitraege.Passiv;
-    document.getElementById('setBeitragJugend').value = beitraege.Jugend;
-    document.getElementById('setBeitragFoerder').value = beitraege['Fördermitglied'];
+onAuthStateChanged(auth, (user) => {
+  if(user) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    document.getElementById('userEmail').textContent = user.email;
+    document.getElementById('loginBtn').textContent = 'Anmelden';
+    document.getElementById('loginBtn').disabled = false;
+
+    membersRef = ref(db, 'mitglieder');
+    configRef  = ref(db, 'config');
+
+    onValue(membersRef, (snap) => {
+      members = snap.val() || {};
+      renderAll();
+    });
+    onValue(configRef, (snap) => {
+      const cfg = snap.val();
+      if(cfg?.beitraege) {
+        beitraege = cfg.beitraege;
+        document.getElementById('setBeitragAktiv').value = beitraege.Aktiv;
+        document.getElementById('setBeitragPassiv').value = beitraege.Passiv;
+        document.getElementById('setBeitragJugend').value = beitraege.Jugend;
+        document.getElementById('setBeitragFoerder').value = beitraege['Fördermitglied'];
+      }
+    });
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('appScreen').style.display = 'none';
   }
 });
 
-// ── HILFSFUNKTIONEN ──
-function asList() { return Object.entries(members).map(([k,v]) => ({...v, _key: k})); }
-function fmtEuro(n) { return (+n||0).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; }
-function iban(s) { return (s||'').replace(/\s/g,''); }
+// ── HELPERS ──
+function asList() { return Object.entries(members).map(([k,v])=>({...v,_key:k})); }
+function fmtEuro(n) { return (+n||0).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+function ibanClean(s) { return (s||'').replace(/\s/g,''); }
 function ini(v,n) { return ((v||'')[0]||'').toUpperCase()+((n||'')[0]||'').toUpperCase(); }
-function farbe(k) { return FARBEN[Math.abs(k.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % FARBEN.length]; }
-
+function farbe(k) { return FARBEN[Math.abs([...k].reduce((a,c)=>a+c.charCodeAt(0),0))%FARBEN.length]; }
 const katCls = {Aktiv:'badge-blau',Passiv:'badge-grau',Jugend:'badge-lila','Fördermitglied':'badge-pink'};
 function katBadge(k) { return `<span class="badge ${katCls[k]||'badge-grau'}">${k}</span>`; }
 function statusBadge(s) {
-  return s === 'bezahlt'
+  return s==='bezahlt'
     ? '<span class="badge badge-gruen"><span class="dot" style="background:#1a5c2e"></span>Bezahlt</span>'
     : '<span class="badge badge-rot"><span class="dot" style="background:#c0392b"></span>Offen</span>';
+}
+function dl(content, filename, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type}));
+  a.download = filename; a.click(); URL.revokeObjectURL(a.href);
 }
 
 // ── NAVIGATION ──
@@ -511,8 +570,7 @@ function renderStats() {
     <div class="stat"><div class="label">Mitglieder gesamt</div><div class="val">${total}</div><div class="sub">Saison ${JAHR}</div></div>
     <div class="stat"><div class="label">Beiträge bezahlt</div><div class="val gruen">${bezahlt}</div><div class="sub">von ${total}</div></div>
     <div class="stat"><div class="label">Noch offen</div><div class="val rot">${offen}</div><div class="sub">${fmtEuro(ausstehend)} ausstehend</div></div>
-    <div class="stat"><div class="label">Einnahmen ${JAHR}</div><div class="val">${fmtEuro(einnahmen)}</div><div class="sub">eingegangen</div></div>
-  `;
+    <div class="stat"><div class="label">Einnahmen ${JAHR}</div><div class="val">${fmtEuro(einnahmen)}</div><div class="sub">eingegangen</div></div>`;
   document.getElementById('statsRow').innerHTML = html;
   document.getElementById('statsRowEinzug').innerHTML = html;
 }
@@ -523,13 +581,13 @@ function renderMitglieder() {
   const q = (document.getElementById('searchInput').value||'').toLowerCase();
   const fk = document.getElementById('filterKat').value;
   const fs = document.getElementById('filterStatus').value;
-  const rows = asList().filter(m => {
+  const rows = asList().filter(m=>{
     const txt = (m.vorname+' '+m.nachname+' '+(m.email||'')).toLowerCase();
-    return txt.includes(q) && (!fk||m.kat===fk) && (!fs||m.status===fs);
+    return txt.includes(q)&&(!fk||m.kat===fk)&&(!fs||m.status===fs);
   });
   const tbody = document.getElementById('memberTable');
   if(!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>Keine Mitglieder gefunden.</p></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>Keine Mitglieder gefunden.</p></div></td></tr>`;
     return;
   }
   tbody.innerHTML = rows.map(m=>`
@@ -556,19 +614,16 @@ function renderMitglieder() {
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
         </button>
       </div></td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
 }
 
 window.toggleStatus = function(key, current) {
-  const newStatus = current === 'bezahlt' ? 'offen' : 'bezahlt';
-  update(ref(db, 'mitglieder/'+key), {status: newStatus});
-  toast(newStatus === 'bezahlt' ? '✓ Als bezahlt markiert' : 'Zurück auf offen gesetzt');
+  update(ref(db,'mitglieder/'+key), {status: current==='bezahlt'?'offen':'bezahlt'});
+  toast(current==='bezahlt'?'Zurück auf offen gesetzt':'✓ Als bezahlt markiert');
 };
-
 window.loeschen = function(key, name) {
   if(!confirm(`${name} wirklich löschen?`)) return;
-  remove(ref(db, 'mitglieder/'+key));
+  remove(ref(db,'mitglieder/'+key));
   toast('Mitglied gelöscht');
 };
 
@@ -587,7 +642,7 @@ function renderEinzug() {
       <div class="avatar" style="background:${farbe(m._key)};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${ini(m.vorname,m.nachname)}</div>
       <div class="sepa-info">
         <div class="nm">${m.vorname} ${m.nachname}</div>
-        <div class="iban">${iban(m.iban)||'– keine IBAN –'}</div>
+        <div class="iban-txt">${ibanClean(m.iban)||'– keine IBAN –'}</div>
       </div>
       ${katBadge(m.kat)}
       <div class="sepa-betrag">${fmtEuro(m.beitrag)}<span class="period">pro Jahr</span></div>
@@ -595,26 +650,18 @@ function renderEinzug() {
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
         Eingezogen
       </button>
-    </div>
-  `).join('')+'</div>';
+    </div>`).join('')+'</div>';
 }
 
-window.bezahltMarkieren = function(key) {
-  update(ref(db, 'mitglieder/'+key), {status:'bezahlt'});
-  toast('✓ Eingezogen');
-};
+window.bezahltMarkieren = function(key) { update(ref(db,'mitglieder/'+key),{status:'bezahlt'}); toast('✓ Eingezogen'); };
 window.alleAlsBezahlt = function() {
-  const updates = {};
-  asList().forEach(m => updates['mitglieder/'+m._key+'/status'] = 'bezahlt');
-  update(ref(db), updates);
-  toast('✓ Alle Beiträge als eingezogen markiert');
+  const u={}; asList().forEach(m=>u['mitglieder/'+m._key+'/status']='bezahlt');
+  update(ref(db),u); toast('✓ Alle Beiträge als eingezogen markiert');
 };
 window.alleAlsOffen = function() {
-  if(!confirm('Alle Beiträge auf "offen" zurücksetzen? (Für neues Vereinsjahr)')) return;
-  const updates = {};
-  asList().forEach(m => updates['mitglieder/'+m._key+'/status'] = 'offen');
-  update(ref(db), updates);
-  toast('Alle Beiträge zurückgesetzt');
+  if(!confirm('Alle Beiträge auf "offen" zurücksetzen?')) return;
+  const u={}; asList().forEach(m=>u['mitglieder/'+m._key+'/status']='offen');
+  update(ref(db),u); toast('Alle Beiträge zurückgesetzt');
 };
 
 // ── SEPA ──
@@ -624,36 +671,33 @@ function renderSepa() {
   document.getElementById('sepaAnzahl').textContent = offen.length;
   document.getElementById('sepaSumme').textContent = fmtEuro(sum);
   if(!document.getElementById('cfgFaellig').value) {
-    const d = new Date(); d.setDate(d.getDate()+8);
-    document.getElementById('cfgFaellig').value = d.toISOString().split('T')[0];
+    const d=new Date(); d.setDate(d.getDate()+8);
+    document.getElementById('cfgFaellig').value=d.toISOString().split('T')[0];
   }
   const el = document.getElementById('sepaListe');
-  if(!offen.length) {
-    el.innerHTML=`<div class="empty"><p>Keine offenen Beiträge mit IBAN vorhanden.</p></div>`; return;
-  }
-  el.innerHTML = '<div class="sepa-list">'+offen.map(m=>`
+  if(!offen.length){el.innerHTML=`<div class="empty"><p>Keine offenen Beiträge mit IBAN.</p></div>`;return;}
+  el.innerHTML='<div class="sepa-list">'+offen.map(m=>`
     <div class="sepa-item">
       <div class="avatar" style="background:${farbe(m._key)};width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${ini(m.vorname,m.nachname)}</div>
-      <div class="sepa-info"><div class="nm">${m.vorname} ${m.nachname}</div><div class="iban">${iban(m.iban)} · ${m.bic||'–'}</div></div>
+      <div class="sepa-info"><div class="nm">${m.vorname} ${m.nachname}</div><div class="iban-txt">${ibanClean(m.iban)} · ${m.bic||'–'}</div></div>
       <div style="font-size:11px;color:var(--grau-5)">${m._key.slice(-6)}</div>
       <div class="sepa-betrag">${fmtEuro(m.beitrag)}</div>
-    </div>
-  `).join('')+'</div>';
+    </div>`).join('')+'</div>';
 }
 
 window.exportSEPA = function() {
   const offen = asList().filter(m=>m.status==='offen'&&m.iban);
-  if(!offen.length) { toast('Keine offenen Beiträge mit IBAN'); return; }
-  const name = document.getElementById('cfgName').value;
-  const glId  = document.getElementById('cfgGlId').value;
-  const vIban = iban(document.getElementById('cfgIban').value);
-  const vBic  = document.getElementById('cfgBic').value;
-  const faellig = document.getElementById('cfgFaellig').value;
-  const seqTp = document.getElementById('cfgSeqTp').value;
-  const gesamt = offen.reduce((a,m)=>a+(+m.beitrag||0),0);
-  const msgId = `KICKERS-${JAHR}-${Math.random().toString(36).substr(2,8).toUpperCase()}`;
-  const now = new Date().toISOString().slice(0,19);
-  const txs = offen.map(m=>`
+  if(!offen.length){toast('Keine offenen Beiträge mit IBAN');return;}
+  const name=document.getElementById('cfgName').value;
+  const glId=document.getElementById('cfgGlId').value;
+  const vIban=ibanClean(document.getElementById('cfgIban').value);
+  const vBic=document.getElementById('cfgBic').value;
+  const faellig=document.getElementById('cfgFaellig').value;
+  const seqTp=document.getElementById('cfgSeqTp').value;
+  const gesamt=offen.reduce((a,m)=>a+(+m.beitrag||0),0);
+  const msgId=`KICKERS-${JAHR}-${Math.random().toString(36).substr(2,8).toUpperCase()}`;
+  const now=new Date().toISOString().slice(0,19);
+  const txs=offen.map(m=>`
     <DrctDbtTxInf>
       <PmtId><EndToEndId>BEITRAG-${JAHR}-${m._key.slice(-6)}</EndToEndId></PmtId>
       <InstdAmt Ccy="EUR">${(+m.beitrag).toFixed(2)}</InstdAmt>
@@ -663,151 +707,122 @@ window.exportSEPA = function() {
       </MndtRltdInf></DrctDbtTx>
       <DbtrAgt><FinInstnId><BIC>${m.bic||'NOTPROVIDED'}</BIC></FinInstnId></DbtrAgt>
       <Dbtr><Nm>${m.vorname} ${m.nachname}</Nm></Dbtr>
-      <DbtrAcct><Id><IBAN>${iban(m.iban)}</IBAN></Id></DbtrAcct>
+      <DbtrAcct><Id><IBAN>${ibanClean(m.iban)}</IBAN></Id></DbtrAcct>
       <RmtInf><Ustrd>Mitgliedsbeitrag ${JAHR} ${name} ${m._key.slice(-6)}</Ustrd></RmtInf>
     </DrctDbtTxInf>`).join('\n');
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  const xml=`<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.003.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.003.02 pain.008.003.02.xsd">
   <CstmrDrctDbtInitn>
     <GrpHdr>
-      <MsgId>${msgId}</MsgId>
-      <CreDtTm>${now}</CreDtTm>
-      <NbOfTxs>${offen.length}</NbOfTxs>
-      <CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
+      <MsgId>${msgId}</MsgId><CreDtTm>${now}</CreDtTm>
+      <NbOfTxs>${offen.length}</NbOfTxs><CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
       <InitgPty><Nm>${name}</Nm></InitgPty>
     </GrpHdr>
     <PmtInf>
-      <PmtInfId>PM-${JAHR}-001</PmtInfId>
-      <PmtMtd>DD</PmtMtd>
-      <NbOfTxs>${offen.length}</NbOfTxs>
-      <CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
-      <PmtTpInf>
-        <SvcLvl><Cd>SEPA</Cd></SvcLvl>
-        <LclInstrm><Cd>CORE</Cd></LclInstrm>
-        <SeqTp>${seqTp}</SeqTp>
-      </PmtTpInf>
+      <PmtInfId>PM-${JAHR}-001</PmtInfId><PmtMtd>DD</PmtMtd>
+      <NbOfTxs>${offen.length}</NbOfTxs><CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
+      <PmtTpInf><SvcLvl><Cd>SEPA</Cd></SvcLvl><LclInstrm><Cd>CORE</Cd></LclInstrm><SeqTp>${seqTp}</SeqTp></PmtTpInf>
       <ReqdColltnDt>${faellig}</ReqdColltnDt>
       <Cdtr><Nm>${name}</Nm></Cdtr>
       <CdtrAcct><Id><IBAN>${vIban}</IBAN></Id></CdtrAcct>
       <CdtrAgt><FinInstnId><BIC>${vBic}</BIC></FinInstnId></CdtrAgt>
-      <CdtrSchmeId><Id><PrvtId><Othr>
-        <Id>${glId}</Id>
-        <SchmeNm><Prtry>SEPA</Prtry></SchmeNm>
-      </Othr></PrvtId></Id></CdtrSchmeId>
+      <CdtrSchmeId><Id><PrvtId><Othr><Id>${glId}</Id><SchmeNm><Prtry>SEPA</Prtry></SchmeNm></Othr></PrvtId></Id></CdtrSchmeId>
       ${txs}
     </PmtInf>
   </CstmrDrctDbtInitn>
 </Document>`;
-  dl(xml, `SEPA_Kickers_${JAHR}.xml`, 'application/xml');
+  dl(xml,`SEPA_Kickers_${JAHR}.xml`,'application/xml');
   toast(`✓ SEPA XML heruntergeladen (${offen.length} Lastschriften, ${fmtEuro(gesamt)})`);
 };
 
 window.downloadCSV = function() {
-  const offen = asList().filter(m=>m.status==='offen');
-  if(!offen.length) { toast('Keine offenen Beiträge'); return; }
-  const h = ['ID','Nachname','Vorname','E-Mail','Kategorie','Beitrag EUR','IBAN','BIC','Mandat-Datum','Verwendungszweck'];
-  const rows = offen.map(m=>[m._key.slice(-6),m.nachname,m.vorname,m.email||'',m.kat,(+m.beitrag).toFixed(2),iban(m.iban),m.bic||'',m.mandat_datum||'',`Mitgliedsbeitrag ${JAHR} FC Kickers Leer`]);
-  const csv = [h,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
-  dl('\uFEFF'+csv, `Beitraege_Kickers_${JAHR}.csv`, 'text/csv;charset=utf-8');
+  const offen=asList().filter(m=>m.status==='offen');
+  if(!offen.length){toast('Keine offenen Beiträge');return;}
+  const h=['ID','Nachname','Vorname','E-Mail','Kategorie','Beitrag EUR','IBAN','BIC','Mandat-Datum','Verwendungszweck'];
+  const rows=offen.map(m=>[m._key.slice(-6),m.nachname,m.vorname,m.email||'',m.kat,(+m.beitrag).toFixed(2),ibanClean(m.iban),m.bic||'',m.mandat_datum||'',`Mitgliedsbeitrag ${JAHR} FC Kickers Leer`]);
+  const csv=[h,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  dl('\uFEFF'+csv,`Beitraege_Kickers_${JAHR}.csv`,'text/csv;charset=utf-8');
   toast('✓ CSV gespeichert');
 };
 
-function dl(content, filename, type) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([content],{type}));
-  a.download = filename; a.click(); URL.revokeObjectURL(a.href);
-}
-
-// ── MODAL ──
-window.openModal = function(id) { document.getElementById('modal-'+id).classList.add('open'); };
-window.closeModal = function(id) { document.getElementById('modal-'+id).classList.remove('open'); };
-
-window.updateNeuBeitrag = function() {
-  const k = document.getElementById('nKat').value;
-  document.getElementById('nBeitrag').value = beitraege[k]||120;
+// ── MODALS ──
+window.openModal = function(id){document.getElementById('modal-'+id).classList.add('open');};
+window.closeModal = function(id){document.getElementById('modal-'+id).classList.remove('open');};
+window.updateNeuBeitrag = function(){
+  document.getElementById('nBeitrag').value = beitraege[document.getElementById('nKat').value]||120;
 };
-
 window.mitgliedHinzufuegen = function() {
-  const v = document.getElementById('nVorname').value.trim();
-  const n = document.getElementById('nNachname').value.trim();
-  if(!v||!n) { toast('Bitte Vor- und Nachname angeben'); return; }
-  const today = new Date().toISOString().split('T')[0];
-  push(membersRef, {
-    vorname: v, nachname: n,
-    email: document.getElementById('nEmail').value.trim(),
-    geburt: document.getElementById('nGeburt').value||'',
-    eintritt: document.getElementById('nEintritt').value||today,
-    kat: document.getElementById('nKat').value,
-    beitrag: parseFloat(document.getElementById('nBeitrag').value)||0,
-    iban: document.getElementById('nIban').value.trim(),
-    bic: document.getElementById('nBic').value.trim(),
-    mandat_datum: document.getElementById('nMandatDatum').value||today,
-    status: 'offen'
+  const v=document.getElementById('nVorname').value.trim();
+  const n=document.getElementById('nNachname').value.trim();
+  if(!v||!n){toast('Bitte Vor- und Nachname angeben');return;}
+  const today=new Date().toISOString().split('T')[0];
+  push(membersRef,{
+    vorname:v,nachname:n,
+    email:document.getElementById('nEmail').value.trim(),
+    geburt:document.getElementById('nGeburt').value||'',
+    eintritt:document.getElementById('nEintritt').value||today,
+    kat:document.getElementById('nKat').value,
+    beitrag:parseFloat(document.getElementById('nBeitrag').value)||0,
+    iban:document.getElementById('nIban').value.trim(),
+    bic:document.getElementById('nBic').value.trim(),
+    mandat_datum:document.getElementById('nMandatDatum').value||today,
+    status:'offen'
   });
   closeModal('neu');
   ['nVorname','nNachname','nEmail','nGeburt','nEintritt','nIban','nBic','nMandatDatum'].forEach(i=>document.getElementById(i).value='');
   toast(`✓ ${v} ${n} aufgenommen`);
 };
-
 window.openEdit = function(key) {
-  const m = members[key]; if(!m) return;
-  document.getElementById('eFirebaseKey').value = key;
-  document.getElementById('eVorname').value = m.vorname||'';
-  document.getElementById('eNachname').value = m.nachname||'';
-  document.getElementById('eEmail').value = m.email||'';
-  document.getElementById('eGeburt').value = m.geburt||'';
-  document.getElementById('eEintritt').value = m.eintritt||'';
-  document.getElementById('eKat').value = m.kat||'Aktiv';
-  document.getElementById('eBeitrag').value = m.beitrag||0;
-  document.getElementById('eIban').value = m.iban||'';
-  document.getElementById('eBic').value = m.bic||'';
-  document.getElementById('eMandatDatum').value = m.mandat_datum||'';
-  document.getElementById('eStatus').value = m.status||'offen';
+  const m=members[key]; if(!m) return;
+  document.getElementById('eFirebaseKey').value=key;
+  ['eVorname','eNachname','eEmail','eGeburt','eEintritt','eIban','eBic','eMandatDatum'].forEach(id=>{
+    const field=id.replace(/^e/,'').toLowerCase();
+    const map={evorname:'vorname',enachname:'nachname',eemail:'email',egeburt:'geburt',eeintritt:'eintritt',eiban:'iban',ebic:'bic',emandatumdatum:'mandat_datum'};
+    document.getElementById(id).value=m[map[id.toLowerCase()]]||'';
+  });
+  document.getElementById('eKat').value=m.kat||'Aktiv';
+  document.getElementById('eBeitrag').value=m.beitrag||0;
+  document.getElementById('eStatus').value=m.status||'offen';
   openModal('edit');
 };
-
 window.mitgliedSpeichern = function() {
-  const key = document.getElementById('eFirebaseKey').value;
-  update(ref(db, 'mitglieder/'+key), {
-    vorname: document.getElementById('eVorname').value.trim(),
-    nachname: document.getElementById('eNachname').value.trim(),
-    email: document.getElementById('eEmail').value.trim(),
-    geburt: document.getElementById('eGeburt').value||'',
-    eintritt: document.getElementById('eEintritt').value||'',
-    kat: document.getElementById('eKat').value,
-    beitrag: parseFloat(document.getElementById('eBeitrag').value)||0,
-    iban: document.getElementById('eIban').value.trim(),
-    bic: document.getElementById('eBic').value.trim(),
-    mandat_datum: document.getElementById('eMandatDatum').value||'',
-    status: document.getElementById('eStatus').value
+  const key=document.getElementById('eFirebaseKey').value;
+  update(ref(db,'mitglieder/'+key),{
+    vorname:document.getElementById('eVorname').value.trim(),
+    nachname:document.getElementById('eNachname').value.trim(),
+    email:document.getElementById('eEmail').value.trim(),
+    geburt:document.getElementById('eGeburt').value||'',
+    eintritt:document.getElementById('eEintritt').value||'',
+    kat:document.getElementById('eKat').value,
+    beitrag:parseFloat(document.getElementById('eBeitrag').value)||0,
+    iban:document.getElementById('eIban').value.trim(),
+    bic:document.getElementById('eBic').value.trim(),
+    mandat_datum:document.getElementById('eMandatDatum').value||'',
+    status:document.getElementById('eStatus').value
   });
-  closeModal('edit');
-  toast('✓ Gespeichert');
+  closeModal('edit'); toast('✓ Gespeichert');
 };
 
 // ── EINSTELLUNGEN ──
 window.beitraegeSpeichern = function() {
-  const b = {
-    Aktiv: parseFloat(document.getElementById('setBeitragAktiv').value)||120,
-    Passiv: parseFloat(document.getElementById('setBeitragPassiv').value)||60,
-    Jugend: parseFloat(document.getElementById('setBeitragJugend').value)||36,
-    'Fördermitglied': parseFloat(document.getElementById('setBeitragFoerder').value)||180
-  };
-  set(configRef, {beitraege: b});
+  set(configRef,{beitraege:{
+    Aktiv:parseFloat(document.getElementById('setBeitragAktiv').value)||120,
+    Passiv:parseFloat(document.getElementById('setBeitragPassiv').value)||60,
+    Jugend:parseFloat(document.getElementById('setBeitragJugend').value)||36,
+    'Fördermitglied':parseFloat(document.getElementById('setBeitragFoerder').value)||180
+  }});
   toast('✓ Beitragssätze gespeichert');
 };
 
 function renderAll() {
   renderMitglieder();
-  const activePage = document.querySelector('.page.active')?.id;
-  if(activePage === 'page-einzug') renderEinzug();
-  if(activePage === 'page-sepa') renderSepa();
+  const active=document.querySelector('.page.active')?.id;
+  if(active==='page-einzug') renderEinzug();
+  if(active==='page-sepa') renderSepa();
 }
 
-// Modals schließen bei Außenklick
 document.querySelectorAll('.modal-overlay').forEach(o=>{
-  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
 });
 </script>
 </body>
