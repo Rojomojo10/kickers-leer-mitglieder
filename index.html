@@ -705,50 +705,109 @@ window.alleAlsOffen = function() {
 };
 
 // ── SEPA ──
+// Berechnet wie viele Monate seit Eintritt noch nicht abgerechnet wurden
+// und gibt den Gesamtbetrag für den ersten Einzug zurück
+function berechneErsterEinzug(m, faelligDatum) {
+  const monatsBeitrag = beitraege[m.kat] || 0;
+  if(!m.eintritt || !faelligDatum) return { quartal: monatsBeitrag*3, nachberechnung: 0, monate: 0 };
+
+  const eintritt = new Date(m.eintritt);
+  const faellig  = new Date(faelligDatum);
+
+  // Erstes volles Quartal: das Quartal in dem das Fälligkeitsdatum liegt
+  // z.B. Fälligkeit April → Quartal Apr-Jun
+  const quartalMonat = Math.floor(faellig.getMonth() / 3) * 3; // 0, 3, 6, oder 9
+  const quartalStart = new Date(faellig.getFullYear(), quartalMonat, 1);
+
+  // Wie viele Monate zwischen Eintritt und Quartalstart wurden noch nicht bezahlt?
+  let nachMonate = 0;
+  if(eintritt < quartalStart) {
+    // Monate vom Eintrittsdatum bis zum Quartalstart
+    nachMonate = (quartalStart.getFullYear() - eintritt.getFullYear()) * 12
+               + (quartalStart.getMonth() - eintritt.getMonth());
+    // Wenn der Eintritt nicht am 1. war, zählt der Eintrittmonat voll
+    nachMonate = Math.max(0, nachMonate);
+  }
+
+  const nachbetrag = Math.round(monatsBeitrag * nachMonate * 100) / 100;
+  const quartalBetrag = monatsBeitrag * 3;
+  return { quartal: quartalBetrag, nachberechnung: nachbetrag, monate: nachMonate };
+}
+
 function renderSepa() {
   const offen = asList().filter(m=>m.status==='offen'&&m.iban);
-  const sum = offen.reduce((a,m)=>a+(+m.beitrag||0),0);
-  document.getElementById('sepaAnzahl').textContent = offen.length;
-  document.getElementById('sepaSumme').textContent = fmtEuro(sum);
   if(!document.getElementById('cfgFaellig').value) {
     const d=new Date(); d.setDate(d.getDate()+14);
     document.getElementById('cfgFaellig').value=d.toISOString().split('T')[0];
   }
+  const faellig = document.getElementById('cfgFaellig').value;
+
+  // Gesamtsumme inkl. Nachberechnung und Passgebühr
+  const sum = offen.reduce((a,m)=>{
+    const {quartal,nachberechnung} = berechneErsterEinzug(m, faellig);
+    return a + quartal + nachberechnung + (m.passgebuehr ? +beitraege.Passgebuehr : 0);
+  }, 0);
+
+  document.getElementById('sepaAnzahl').textContent = offen.length;
+  document.getElementById('sepaSumme').textContent = fmtEuro(sum);
+
   const el = document.getElementById('sepaListe');
   if(!offen.length){el.innerHTML=`<div class="empty"><p>Keine offenen Beiträge mit IBAN.</p></div>`;return;}
-  el.innerHTML='<div class="sepa-list">'+offen.map(m=>`
+  el.innerHTML='<div class="sepa-list">'+offen.map(m=>{
+    const {quartal,nachberechnung,monate} = berechneErsterEinzug(m, faellig);
+    const gesamt = quartal + nachberechnung + (m.passgebuehr ? +beitraege.Passgebuehr : 0);
+    const details = [
+      `${fmtEuro(quartal)} Quartal`,
+      nachberechnung > 0 ? `<span style="color:var(--amber)">+ ${fmtEuro(nachberechnung)} Nachber. (${monate} Mon.)</span>` : '',
+      m.passgebuehr ? `<span style="color:var(--amber)">+ ${fmtEuro(beitraege.Passgebuehr)} Pass</span>` : ''
+    ].filter(Boolean).join(' · ');
+    return `
     <div class="sepa-item">
       <div class="avatar" style="background:${farbe(m._key)};width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${ini(m.vorname,m.nachname)}</div>
-      <div class="sepa-info"><div class="nm">${m.vorname} ${m.nachname}${(m.eltern_vorname&&m.eltern_nachname)?` <span style="font-size:11px;font-weight:400;color:var(--grau-5)">· Kto: ${m.eltern_vorname} ${m.eltern_nachname}</span>`:''}</div><div class="iban-txt">${ibanClean(m.iban)} · ${m.bic||'–'}</div></div>
-      <div style="font-size:11px;color:var(--grau-5)">${m._key.slice(-6)}</div>
-      <div class="sepa-betrag">${fmtEuro(m.beitrag)}</div>
-    </div>`).join('')+'</div>';
+      <div class="sepa-info">
+        <div class="nm">${m.vorname} ${m.nachname}${(m.eltern_vorname&&m.eltern_nachname)?` <span style="font-size:11px;font-weight:400;color:var(--grau-5)">· Kto: ${m.eltern_vorname} ${m.eltern_nachname}</span>`:''}
+          ${nachberechnung>0?'<span class="badge badge-amber" style="margin-left:6px">Nachberechnung</span>':''}
+        </div>
+        <div class="iban-txt">${ibanClean(m.iban)} · ${m.bic||'–'}</div>
+        <div style="font-size:11px;color:var(--grau-5);margin-top:2px">Eintritt: ${m.eintritt||'–'} · ${details}</div>
+      </div>
+      <div class="sepa-betrag" style="font-size:16px">${fmtEuro(gesamt)}</div>
+    </div>`;
+  }).join('')+'</div>';
 }
 
 window.exportSEPA = function() {
   const offen = asList().filter(m=>m.status==='offen'&&m.iban);
   if(!offen.length){toast('Keine offenen Beiträge mit IBAN');return;}
-  const name=document.getElementById('cfgName').value;
-  const glId=document.getElementById('cfgGlId').value;
-  const vIban=ibanClean(document.getElementById('cfgIban').value);
-  const vBic=document.getElementById('cfgBic').value;
-  const faellig=document.getElementById('cfgFaellig').value;
-  const seqTp=document.getElementById('cfgSeqTp').value;
+  const name    = document.getElementById('cfgName').value;
+  const glId    = document.getElementById('cfgGlId').value;
+  const vIban   = ibanClean(document.getElementById('cfgIban').value);
+  const vBic    = document.getElementById('cfgBic').value;
+  const faellig = document.getElementById('cfgFaellig').value;
+  const seqTp   = document.getElementById('cfgSeqTp').value;
 
-  // Build all transactions — Quartalsbeitrag + optional Passgebühr als eigene Transaktion
   const txList = [];
   offen.forEach(m=>{
-    const dbtrName = (m.eltern_vorname&&m.eltern_nachname) ? m.eltern_vorname+' '+m.eltern_nachname : m.vorname+' '+m.nachname;
+    const dbtrName = (m.eltern_vorname&&m.eltern_nachname)
+      ? m.eltern_vorname+' '+m.eltern_nachname
+      : m.vorname+' '+m.nachname;
+    const {quartal, nachberechnung, monate} = berechneErsterEinzug(m, faellig);
+    const gesamtBetrag = quartal + nachberechnung;
+
+    // Quartalsbeitrag + Nachberechnung in einer Transaktion
     txList.push({
       e2e:`BEITRAG-Q-${JAHR}-${m._key.slice(-6)}`,
-      betrag:(+m.beitrag).toFixed(2),
+      betrag: gesamtBetrag.toFixed(2),
       mandatId:`MR-${m._key.slice(-6)}`,
       mandatDat:m.mandat_datum||m.eintritt||JAHR+'-01-01',
       bic:m.bic||'NOTPROVIDED',
-      dbtrName,
-      iban:ibanClean(m.iban),
-      zweck:`Quartalsbeitrag ${JAHR} ${name} Nr.${m._key.slice(-6)}`
+      dbtrName, iban:ibanClean(m.iban),
+      zweck: nachberechnung > 0
+        ? `Quartalsbeitrag + Nachber. ${monate} Mon. ${JAHR} ${name} Nr.${m._key.slice(-6)}`
+        : `Quartalsbeitrag ${JAHR} ${name} Nr.${m._key.slice(-6)}`
     });
+
+    // Passgebühr als eigene Transaktion
     if(m.passgebuehr) {
       txList.push({
         e2e:`PASS-${JAHR}-${m._key.slice(-6)}`,
@@ -756,8 +815,7 @@ window.exportSEPA = function() {
         mandatId:`MR-${m._key.slice(-6)}`,
         mandatDat:m.mandat_datum||m.eintritt||JAHR+'-01-01',
         bic:m.bic||'NOTPROVIDED',
-        dbtrName,
-        iban:ibanClean(m.iban),
+        dbtrName, iban:ibanClean(m.iban),
         zweck:`Passgebühr ${name} Nr.${m._key.slice(-6)}`
       });
     }
