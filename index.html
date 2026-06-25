@@ -109,6 +109,7 @@
   .badge-lila { background: #f5f3ff; color: #5b21b6; }
   .badge-grau { background: var(--grau-1); color: var(--grau-7); }
   .badge-pink { background: #fdf2f8; color: #831843; }
+  .badge-amber { background: var(--amber-hell); color: #78350f; }
   .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
 
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -233,9 +234,10 @@
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" id="searchInput" placeholder="Name oder E-Mail suchen…" oninput="renderMitglieder()">
               </div>
-              <select id="filterKat" onchange="renderMitglieder()" style="width:160px">
+              <select id="filterKat" onchange="renderMitglieder()" style="width:210px">
                 <option value="">Alle Kategorien</option>
-                <option>Aktiv</option><option>Passiv</option><option>Jugend</option><option>Fördermitglied</option>
+                <option value="Erwachsene">Erwachsene</option>
+                <option value="Schüler/Student/Azubi">Schüler / Student / Azubi</option>
               </select>
               <select id="filterStatus" onchange="renderMitglieder()" style="width:140px">
                 <option value="">Alle Status</option>
@@ -340,11 +342,14 @@
         <div class="card">
           <div class="card-header"><h3>Beitragssätze</h3></div>
           <div class="card-body">
+            <p style="font-size:13px;color:var(--grau-7);margin-bottom:16px">Monatsbeiträge — werden automatisch als <strong>Quartalsbeitrag (× 3)</strong> für den SEPA-Einzug berechnet.</p>
             <div class="field-row">
-              <div class="field"><label>Aktiv (€/Jahr)</label><input type="number" id="setBeitragAktiv" value="120"></div>
-              <div class="field"><label>Passiv (€/Jahr)</label><input type="number" id="setBeitragPassiv" value="60"></div>
-              <div class="field"><label>Jugend (€/Jahr)</label><input type="number" id="setBeitragJugend" value="36"></div>
-              <div class="field"><label>Fördermitglied (€/Jahr)</label><input type="number" id="setBeitragFoerder" value="180"></div>
+              <div class="field"><label>Erwachsene (€/Monat)</label><input type="number" id="setBeitragAktiv" value="9"></div>
+              <div class="field"><label>Schüler / Student / Azubi (€/Monat)</label><input type="number" id="setBeitragPassiv" value="5"></div>
+            </div>
+            <div class="field" style="margin-top:4px">
+              <label>Passgebühr (€, einmalig)</label>
+              <input type="number" id="setBeitragPass" value="30" style="max-width:160px">
             </div>
             <button class="btn btn-primary" onclick="beitraegeSpeichern()">Speichern</button>
           </div>
@@ -375,10 +380,18 @@
       <div class="field-row">
         <div class="field"><label>Kategorie</label>
           <select id="nKat" onchange="updateNeuBeitrag()">
-            <option>Aktiv</option><option>Passiv</option><option>Jugend</option><option>Fördermitglied</option>
+            <option value="Erwachsene">Erwachsene (9 €/Monat)</option>
+            <option value="Schüler/Student/Azubi">Schüler / Student / Azubi (5 €/Monat)</option>
           </select>
         </div>
-        <div class="field"><label>Jahresbeitrag (€)</label><input type="number" id="nBeitrag" value="120"></div>
+        <div class="field"><label>Quartalsbeitrag (€)</label><input type="number" id="nBeitrag" value="27" readonly style="background:var(--grau-0);color:var(--grau-7)"></div>
+      </div>
+      <div class="field" style="background:var(--gruen-hell);border:1px solid var(--gruen-rand);border-radius:var(--radius);padding:12px 14px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600">
+          <input type="checkbox" id="nPassgebuehr" style="width:16px;height:16px;accent-color:var(--gruen);flex-shrink:0">
+          Passgebühr 30,00 € erheben (einmalig für Neumitglieder)
+        </label>
+        <div style="font-size:11px;color:#145226;margin-top:4px;margin-left:26px">Wird als separate Lastschrift im SEPA-Export ausgewiesen.</div>
       </div>
       <div class="field"><label>IBAN</label><input type="text" id="nIban" placeholder="DE89 3704 0044 0532 0130 00"></div>
       <div class="field"><label>BIC</label><input type="text" id="nBic" placeholder="NOLADE21LER"></div>
@@ -422,9 +435,19 @@
       </div>
       <div class="field-row">
         <div class="field"><label>Kategorie</label>
-          <select id="eKat"><option>Aktiv</option><option>Passiv</option><option>Jugend</option><option>Fördermitglied</option></select>
+          <select id="eKat" onchange="updateEditBeitrag()">
+            <option value="Erwachsene">Erwachsene (9 €/Monat)</option>
+            <option value="Schüler/Student/Azubi">Schüler / Student / Azubi (5 €/Monat)</option>
+          </select>
         </div>
-        <div class="field"><label>Jahresbeitrag (€)</label><input type="number" id="eBeitrag"></div>
+        <div class="field"><label>Quartalsbeitrag (€)</label><input type="number" id="eBeitrag" readonly style="background:var(--grau-0);color:var(--grau-7)"></div>
+      </div>
+      <div class="field" style="background:var(--gruen-hell);border:1px solid var(--gruen-rand);border-radius:var(--radius);padding:12px 14px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600">
+          <input type="checkbox" id="ePassgebuehr" style="width:16px;height:16px;accent-color:var(--gruen);flex-shrink:0">
+          Passgebühr 30,00 € erheben (einmalig)
+        </label>
+        <div style="font-size:11px;color:#145226;margin-top:4px;margin-left:26px">Nur setzen wenn noch nicht eingezogen.</div>
       </div>
       <div class="field"><label>IBAN</label><input type="text" id="eIban"></div>
       <div class="field"><label>BIC</label><input type="text" id="eBic"></div>
@@ -477,9 +500,11 @@ document.getElementById('topbarJahr').textContent = 'Saison ' + JAHR;
 document.getElementById('einzugJahr').textContent = JAHR;
 
 const FARBEN = ['#1a5c2e','#185FA5','#6d3f99','#b45309','#be3a3a','#0d7490','#166534'];
-let beitraege = {Aktiv:120,Passiv:60,Jugend:36,'Fördermitglied':180};
+let beitraege = {Erwachsene:9,'Schüler/Student/Azubi':5,Passgebuehr:30};
 let members = {};
 let membersRef, configRef;
+
+function quartal(kat) { return (beitraege[kat]||0) * 3; }
 
 // ── AUTH ──
 window.doLogin = async function() {
@@ -524,10 +549,9 @@ onAuthStateChanged(auth, (user) => {
       const cfg = snap.val();
       if(cfg?.beitraege) {
         beitraege = cfg.beitraege;
-        document.getElementById('setBeitragAktiv').value = beitraege.Aktiv;
-        document.getElementById('setBeitragPassiv').value = beitraege.Passiv;
-        document.getElementById('setBeitragJugend').value = beitraege.Jugend;
-        document.getElementById('setBeitragFoerder').value = beitraege['Fördermitglied'];
+        document.getElementById('setBeitragAktiv').value = beitraege.Erwachsene||9;
+        document.getElementById('setBeitragPassiv').value = beitraege['Schüler/Student/Azubi']||5;
+        document.getElementById('setBeitragPass').value = beitraege.Passgebuehr||30;
       }
     });
   } else {
@@ -542,7 +566,7 @@ function fmtEuro(n) { return (+n||0).toLocaleString('de-DE',{minimumFractionDigi
 function ibanClean(s) { return (s||'').replace(/\s/g,''); }
 function ini(v,n) { return ((v||'')[0]||'').toUpperCase()+((n||'')[0]||'').toUpperCase(); }
 function farbe(k) { return FARBEN[Math.abs([...k].reduce((a,c)=>a+c.charCodeAt(0),0))%FARBEN.length]; }
-const katCls = {Aktiv:'badge-blau',Passiv:'badge-grau',Jugend:'badge-lila','Fördermitglied':'badge-pink'};
+const katCls = {Erwachsene:'badge-blau','Schüler/Student/Azubi':'badge-lila'};
 function katBadge(k) { return `<span class="badge ${katCls[k]||'badge-grau'}">${k}</span>`; }
 function statusBadge(s) {
   return s==='bezahlt'
@@ -580,11 +604,11 @@ function renderStats() {
   const total = list.length;
   const bezahlt = list.filter(m=>m.status==='bezahlt').length;
   const offen = list.filter(m=>m.status==='offen').length;
-  const einnahmen = list.filter(m=>m.status==='bezahlt').reduce((a,m)=>a+(+m.beitrag||0),0);
-  const ausstehend = list.filter(m=>m.status==='offen').reduce((a,m)=>a+(+m.beitrag||0),0);
+  const einnahmen = list.filter(m=>m.status==='bezahlt').reduce((a,m)=>a+(+m.beitrag||0)+(m.passgebuehr?+beitraege.Passgebuehr:0),0);
+  const ausstehend = list.filter(m=>m.status==='offen').reduce((a,m)=>a+(+m.beitrag||0)+(m.passgebuehr?+beitraege.Passgebuehr:0),0);
   const html = `
     <div class="stat"><div class="label">Mitglieder gesamt</div><div class="val">${total}</div><div class="sub">Saison ${JAHR}</div></div>
-    <div class="stat"><div class="label">Beiträge bezahlt</div><div class="val gruen">${bezahlt}</div><div class="sub">von ${total}</div></div>
+    <div class="stat"><div class="label">Quartal bezahlt</div><div class="val gruen">${bezahlt}</div><div class="sub">von ${total}</div></div>
     <div class="stat"><div class="label">Noch offen</div><div class="val rot">${offen}</div><div class="sub">${fmtEuro(ausstehend)} ausstehend</div></div>
     <div class="stat"><div class="label">Einnahmen ${JAHR}</div><div class="val">${fmtEuro(einnahmen)}</div><div class="sub">eingegangen</div></div>`;
   document.getElementById('statsRow').innerHTML = html;
@@ -613,8 +637,8 @@ function renderMitglieder() {
         <div><div class="nm">${m.vorname} ${m.nachname}</div><div class="em">${m.email||'–'}</div></div>
       </div></td>
       <td style="color:var(--grau-5);font-family:monospace">${m._key.slice(-6)}</td>
-      <td>${katBadge(m.kat)}</td>
-      <td style="font-weight:600">${fmtEuro(m.beitrag)}</td>
+      <td>${katBadge(m.kat)}${m.passgebuehr?'<span class="badge badge-amber" style="margin-left:4px">+ Pass</span>':''}</td>
+      <td style="font-weight:600">${fmtEuro(m.beitrag)}${m.passgebuehr?`<span style="font-size:11px;color:var(--amber);margin-left:4px">+ ${fmtEuro(beitraege.Passgebuehr)} Pass</span>`:''}</td>
       <td>${statusBadge(m.status)}</td>
       <td><div style="display:flex;gap:6px">
         <button class="btn btn-sm" onclick="toggleStatus('${m._key}','${m.status}')">
@@ -710,45 +734,76 @@ window.exportSEPA = function() {
   const vBic=document.getElementById('cfgBic').value;
   const faellig=document.getElementById('cfgFaellig').value;
   const seqTp=document.getElementById('cfgSeqTp').value;
-  const gesamt=offen.reduce((a,m)=>a+(+m.beitrag||0),0);
+
+  // Build all transactions — Quartalsbeitrag + optional Passgebühr als eigene Transaktion
+  const txList = [];
+  offen.forEach(m=>{
+    const dbtrName = (m.eltern_vorname&&m.eltern_nachname) ? m.eltern_vorname+' '+m.eltern_nachname : m.vorname+' '+m.nachname;
+    txList.push({
+      e2e:`BEITRAG-Q-${JAHR}-${m._key.slice(-6)}`,
+      betrag:(+m.beitrag).toFixed(2),
+      mandatId:`MR-${m._key.slice(-6)}`,
+      mandatDat:m.mandat_datum||m.eintritt||JAHR+'-01-01',
+      bic:m.bic||'NOTPROVIDED',
+      dbtrName,
+      iban:ibanClean(m.iban),
+      zweck:`Quartalsbeitrag ${JAHR} ${name} Nr.${m._key.slice(-6)}`
+    });
+    if(m.passgebuehr) {
+      txList.push({
+        e2e:`PASS-${JAHR}-${m._key.slice(-6)}`,
+        betrag:(+beitraege.Passgebuehr).toFixed(2),
+        mandatId:`MR-${m._key.slice(-6)}`,
+        mandatDat:m.mandat_datum||m.eintritt||JAHR+'-01-01',
+        bic:m.bic||'NOTPROVIDED',
+        dbtrName,
+        iban:ibanClean(m.iban),
+        zweck:`Passgebühr ${name} Nr.${m._key.slice(-6)}`
+      });
+    }
+  });
+
+  const gesamt = txList.reduce((a,t)=>a+parseFloat(t.betrag),0);
   const msgId=`KICKERS-${JAHR}-${Math.random().toString(36).substr(2,8).toUpperCase()}`;
   const now=new Date().toISOString().slice(0,19);
-  const txs=offen.map(m=>`
+
+  const txsXml = txList.map(t=>`
     <DrctDbtTxInf>
-      <PmtId><EndToEndId>BEITRAG-${JAHR}-${m._key.slice(-6)}</EndToEndId></PmtId>
-      <InstdAmt Ccy="EUR">${(+m.beitrag).toFixed(2)}</InstdAmt>
+      <PmtId><EndToEndId>${t.e2e}</EndToEndId></PmtId>
+      <InstdAmt Ccy="EUR">${t.betrag}</InstdAmt>
       <DrctDbtTx><MndtRltdInf>
-        <MndtId>MR-${m._key.slice(-6)}</MndtId>
-        <DtOfSgntr>${m.mandat_datum||m.eintritt||JAHR+'-01-01'}</DtOfSgntr>
+        <MndtId>${t.mandatId}</MndtId>
+        <DtOfSgntr>${t.mandatDat}</DtOfSgntr>
       </MndtRltdInf></DrctDbtTx>
-      <DbtrAgt><FinInstnId><BIC>${m.bic||'NOTPROVIDED'}</BIC></FinInstnId></DbtrAgt>
-      <Dbtr><Nm>${(m.eltern_vorname&&m.eltern_nachname) ? m.eltern_vorname+' '+m.eltern_nachname : m.vorname+' '+m.nachname}</Nm></Dbtr>
-      <DbtrAcct><Id><IBAN>${ibanClean(m.iban)}</IBAN></Id></DbtrAcct>
-      <RmtInf><Ustrd>Mitgliedsbeitrag ${JAHR} ${name} ${m._key.slice(-6)}</Ustrd></RmtInf>
+      <DbtrAgt><FinInstnId><BIC>${t.bic}</BIC></FinInstnId></DbtrAgt>
+      <Dbtr><Nm>${t.dbtrName}</Nm></Dbtr>
+      <DbtrAcct><Id><IBAN>${t.iban}</IBAN></Id></DbtrAcct>
+      <RmtInf><Ustrd>${t.zweck}</Ustrd></RmtInf>
     </DrctDbtTxInf>`).join('\n');
+
   const xml=`<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.003.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.003.02 pain.008.003.02.xsd">
   <CstmrDrctDbtInitn>
     <GrpHdr>
       <MsgId>${msgId}</MsgId><CreDtTm>${now}</CreDtTm>
-      <NbOfTxs>${offen.length}</NbOfTxs><CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
+      <NbOfTxs>${txList.length}</NbOfTxs><CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
       <InitgPty><Nm>${name}</Nm></InitgPty>
     </GrpHdr>
     <PmtInf>
       <PmtInfId>PM-${JAHR}-001</PmtInfId><PmtMtd>DD</PmtMtd>
-      <NbOfTxs>${offen.length}</NbOfTxs><CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
+      <NbOfTxs>${txList.length}</NbOfTxs><CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
       <PmtTpInf><SvcLvl><Cd>SEPA</Cd></SvcLvl><LclInstrm><Cd>CORE</Cd></LclInstrm><SeqTp>${seqTp}</SeqTp></PmtTpInf>
       <ReqdColltnDt>${faellig}</ReqdColltnDt>
       <Cdtr><Nm>${name}</Nm></Cdtr>
       <CdtrAcct><Id><IBAN>${vIban}</IBAN></Id></CdtrAcct>
       <CdtrAgt><FinInstnId><BIC>${vBic}</BIC></FinInstnId></CdtrAgt>
       <CdtrSchmeId><Id><PrvtId><Othr><Id>${glId}</Id><SchmeNm><Prtry>SEPA</Prtry></SchmeNm></Othr></PrvtId></Id></CdtrSchmeId>
-      ${txs}
+      ${txsXml}
     </PmtInf>
   </CstmrDrctDbtInitn>
 </Document>`;
   dl(xml,`SEPA_Kickers_${JAHR}.xml`,'application/xml');
-  toast(`✓ SEPA XML heruntergeladen (${offen.length} Lastschriften, ${fmtEuro(gesamt)})`);
+  toast(`✓ SEPA XML: ${txList.length} Lastschriften, ${fmtEuro(gesamt)}`);
 };
 
 window.downloadCSV = function() {
@@ -766,30 +821,38 @@ window.openModal = function(id){document.getElementById('modal-'+id).classList.a
 window.closeModal = function(id){document.getElementById('modal-'+id).classList.remove('open');};
 window.updateNeuBeitrag = function(){
   const kat = document.getElementById('nKat').value;
-  document.getElementById('nBeitrag').value = beitraege[kat]||120;
-  document.getElementById('nElternWrap').style.display = kat==='Jugend' ? 'block' : 'none';
+  document.getElementById('nBeitrag').value = quartal(kat).toFixed(2);
+  document.getElementById('nElternWrap').style.display = kat==='Schüler/Student/Azubi' ? 'block' : 'none';
+};
+window.updateEditBeitrag = function(){
+  const kat = document.getElementById('eKat').value;
+  document.getElementById('eBeitrag').value = quartal(kat).toFixed(2);
+  document.getElementById('eElternWrap').style.display = kat==='Schüler/Student/Azubi' ? 'block' : 'none';
 };
 window.mitgliedHinzufuegen = function() {
   const v=document.getElementById('nVorname').value.trim();
   const n=document.getElementById('nNachname').value.trim();
   if(!v||!n){toast('Bitte Vor- und Nachname angeben');return;}
-  const today=new Date().toISOString().split('T')[0];
+  const kat = document.getElementById('nKat').value;
+  const today = new Date().toISOString().split('T')[0];
   push(membersRef,{
     vorname:v,nachname:n,
     email:document.getElementById('nEmail').value.trim(),
     geburt:document.getElementById('nGeburt').value||'',
     eintritt:document.getElementById('nEintritt').value||today,
-    kat:document.getElementById('nKat').value,
-    beitrag:parseFloat(document.getElementById('nBeitrag').value)||0,
+    kat:kat,
+    beitrag:quartal(kat),
     iban:document.getElementById('nIban').value.trim(),
     bic:document.getElementById('nBic').value.trim(),
     mandat_datum:document.getElementById('nMandatDatum').value||today,
     eltern_vorname:document.getElementById('nElternVorname').value.trim(),
     eltern_nachname:document.getElementById('nElternNachname').value.trim(),
+    passgebuehr:document.getElementById('nPassgebuehr').checked,
     status:'offen'
   });
   closeModal('neu');
   ['nVorname','nNachname','nEmail','nGeburt','nEintritt','nIban','nBic','nMandatDatum','nElternVorname','nElternNachname'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('nPassgebuehr').checked = false;
   toast(`✓ ${v} ${n} aufgenommen`);
 };
 window.openEdit = function(key) {
@@ -800,32 +863,36 @@ window.openEdit = function(key) {
     const map={evorname:'vorname',enachname:'nachname',eemail:'email',egeburt:'geburt',eeintritt:'eintritt',eiban:'iban',ebic:'bic',emandatumdatum:'mandat_datum'};
     document.getElementById(id).value=m[map[id.toLowerCase()]]||'';
   });
-  document.getElementById('eKat').value=m.kat||'Aktiv';
-  document.getElementById('eBeitrag').value=m.beitrag||0;
+  document.getElementById('eKat').value=m.kat||'Erwachsene';
+  document.getElementById('eBeitrag').value=(+m.beitrag||0).toFixed(2);
   document.getElementById('eStatus').value=m.status||'offen';
   document.getElementById('eElternVorname').value=m.eltern_vorname||'';
   document.getElementById('eElternNachname').value=m.eltern_nachname||'';
-  document.getElementById('eElternWrap').style.display = m.kat==='Jugend' ? 'block' : 'none';
+  document.getElementById('ePassgebuehr').checked=!!m.passgebuehr;
+  document.getElementById('eElternWrap').style.display = (m.kat==='Schüler/Student/Azubi') ? 'block' : 'none';
   document.getElementById('eKat').onchange = function() {
-    document.getElementById('eElternWrap').style.display = this.value==='Jugend' ? 'block' : 'none';
+    document.getElementById('eBeitrag').value = quartal(this.value).toFixed(2);
+    document.getElementById('eElternWrap').style.display = this.value==='Schüler/Student/Azubi' ? 'block' : 'none';
   };
   openModal('edit');
 };
 window.mitgliedSpeichern = function() {
   const key=document.getElementById('eFirebaseKey').value;
+  const newKat = document.getElementById('eKat').value;
   update(ref(db,'mitglieder/'+key),{
     vorname:document.getElementById('eVorname').value.trim(),
     nachname:document.getElementById('eNachname').value.trim(),
     email:document.getElementById('eEmail').value.trim(),
     geburt:document.getElementById('eGeburt').value||'',
     eintritt:document.getElementById('eEintritt').value||'',
-    kat:document.getElementById('eKat').value,
-    beitrag:parseFloat(document.getElementById('eBeitrag').value)||0,
+    kat:newKat,
+    beitrag:quartal(newKat),
     iban:document.getElementById('eIban').value.trim(),
     bic:document.getElementById('eBic').value.trim(),
     mandat_datum:document.getElementById('eMandatDatum').value||'',
     eltern_vorname:document.getElementById('eElternVorname').value.trim(),
     eltern_nachname:document.getElementById('eElternNachname').value.trim(),
+    passgebuehr:document.getElementById('ePassgebuehr').checked,
     status:document.getElementById('eStatus').value
   });
   closeModal('edit'); toast('✓ Gespeichert');
@@ -834,10 +901,9 @@ window.mitgliedSpeichern = function() {
 // ── EINSTELLUNGEN ──
 window.beitraegeSpeichern = function() {
   set(configRef,{beitraege:{
-    Aktiv:parseFloat(document.getElementById('setBeitragAktiv').value)||120,
-    Passiv:parseFloat(document.getElementById('setBeitragPassiv').value)||60,
-    Jugend:parseFloat(document.getElementById('setBeitragJugend').value)||36,
-    'Fördermitglied':parseFloat(document.getElementById('setBeitragFoerder').value)||180
+    Erwachsene:parseFloat(document.getElementById('setBeitragAktiv').value)||9,
+    'Schüler/Student/Azubi':parseFloat(document.getElementById('setBeitragPassiv').value)||5,
+    Passgebuehr:parseFloat(document.getElementById('setBeitragPass').value)||30
   }});
   toast('✓ Beitragssätze gespeichert');
 };
