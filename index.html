@@ -839,10 +839,18 @@ window.exportSEPA = function() {
     <DrctDbtTxInf>
       <PmtId><EndToEndId>${t.e2e}</EndToEndId></PmtId>
       <InstdAmt Ccy="EUR">${t.betrag}</InstdAmt>
-      <DrctDbtTx><MndtRltdInf>
-        <MndtId>${t.mandatId}</MndtId>
-        <DtOfSgntr>${t.mandatDat}</DtOfSgntr>
-      </MndtRltdInf></DrctDbtTx>
+      <DrctDbtTx>
+        <MndtRltdInf>
+          <MndtId>${t.mandatId}</MndtId>
+          <DtOfSgntr>${t.mandatDat}</DtOfSgntr>
+        </MndtRltdInf>
+        <CdtrSchmeId>
+          <Id><PrvtId><Othr>
+            <Id>${glId}</Id>
+            <SchmeNm><Prtry>SEPA</Prtry></SchmeNm>
+          </Othr></PrvtId></Id>
+        </CdtrSchmeId>
+      </DrctDbtTx>
       <DbtrAgt><FinInstnId><BIC>${t.bic}</BIC></FinInstnId></DbtrAgt>
       <Dbtr><Nm>${t.dbtrName}</Nm></Dbtr>
       <DbtrAcct><Id><IBAN>${t.iban}</IBAN></Id></DbtrAcct>
@@ -850,7 +858,7 @@ window.exportSEPA = function() {
     </DrctDbtTxInf>`).join('\n');
 
   const xml=`<?xml version="1.0" encoding="UTF-8"?>
-<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.003.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.003.02 pain.008.003.02.xsd">
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02 pain.008.001.02.xsd">
   <CstmrDrctDbtInitn>
     <GrpHdr>
       <MsgId>${msgId}</MsgId><CreDtTm>${now}</CreDtTm>
@@ -865,7 +873,6 @@ window.exportSEPA = function() {
       <Cdtr><Nm>${name}</Nm></Cdtr>
       <CdtrAcct><Id><IBAN>${vIban}</IBAN></Id></CdtrAcct>
       <CdtrAgt><FinInstnId><BIC>${vBic}</BIC></FinInstnId></CdtrAgt>
-      <CdtrSchmeId><Id><PrvtId><Othr><Id>${glId}</Id><SchmeNm><Prtry>SEPA</Prtry></SchmeNm></Othr></PrvtId></Id></CdtrSchmeId>
       ${txsXml}
     </PmtInf>
   </CstmrDrctDbtInitn>
