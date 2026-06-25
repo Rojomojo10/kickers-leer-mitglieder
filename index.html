@@ -382,6 +382,14 @@
       </div>
       <div class="field"><label>IBAN</label><input type="text" id="nIban" placeholder="DE89 3704 0044 0532 0130 00"></div>
       <div class="field"><label>BIC</label><input type="text" id="nBic" placeholder="NOLADE21LER"></div>
+      <div class="field" id="nElternWrap" style="display:none">
+        <label>Kontoinhaber (Elternteil) <span style="font-weight:400;color:var(--grau-5)">— für SEPA-Lastschrift</span></label>
+        <div class="field-row" style="margin-top:0">
+          <input type="text" id="nElternVorname" placeholder="Vorname Elternteil">
+          <input type="text" id="nElternNachname" placeholder="Nachname Elternteil">
+        </div>
+        <div class="field-hint">Name erscheint im SEPA-Export statt dem Mitglied.</div>
+      </div>
       <div class="field"><label>Mandat-Datum (SEPA-Unterschrift)</label><input type="date" id="nMandatDatum"></div>
     </div>
     <div class="modal-foot">
@@ -420,6 +428,14 @@
       </div>
       <div class="field"><label>IBAN</label><input type="text" id="eIban"></div>
       <div class="field"><label>BIC</label><input type="text" id="eBic"></div>
+      <div class="field" id="eElternWrap" style="display:none">
+        <label>Kontoinhaber (Elternteil) <span style="font-weight:400;color:var(--grau-5)">— für SEPA-Lastschrift</span></label>
+        <div class="field-row" style="margin-top:0">
+          <input type="text" id="eElternVorname" placeholder="Vorname Elternteil">
+          <input type="text" id="eElternNachname" placeholder="Nachname Elternteil">
+        </div>
+        <div class="field-hint">Name erscheint im SEPA-Export statt dem Mitglied.</div>
+      </div>
       <div class="field"><label>Mandat-Datum</label><input type="date" id="eMandatDatum"></div>
       <div class="field"><label>Zahlungsstatus</label>
         <select id="eStatus"><option value="offen">Offen</option><option value="bezahlt">Bezahlt</option></select>
@@ -679,7 +695,7 @@ function renderSepa() {
   el.innerHTML='<div class="sepa-list">'+offen.map(m=>`
     <div class="sepa-item">
       <div class="avatar" style="background:${farbe(m._key)};width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${ini(m.vorname,m.nachname)}</div>
-      <div class="sepa-info"><div class="nm">${m.vorname} ${m.nachname}</div><div class="iban-txt">${ibanClean(m.iban)} · ${m.bic||'–'}</div></div>
+      <div class="sepa-info"><div class="nm">${m.vorname} ${m.nachname}${(m.eltern_vorname&&m.eltern_nachname)?` <span style="font-size:11px;font-weight:400;color:var(--grau-5)">· Kto: ${m.eltern_vorname} ${m.eltern_nachname}</span>`:''}</div><div class="iban-txt">${ibanClean(m.iban)} · ${m.bic||'–'}</div></div>
       <div style="font-size:11px;color:var(--grau-5)">${m._key.slice(-6)}</div>
       <div class="sepa-betrag">${fmtEuro(m.beitrag)}</div>
     </div>`).join('')+'</div>';
@@ -706,7 +722,7 @@ window.exportSEPA = function() {
         <DtOfSgntr>${m.mandat_datum||m.eintritt||JAHR+'-01-01'}</DtOfSgntr>
       </MndtRltdInf></DrctDbtTx>
       <DbtrAgt><FinInstnId><BIC>${m.bic||'NOTPROVIDED'}</BIC></FinInstnId></DbtrAgt>
-      <Dbtr><Nm>${m.vorname} ${m.nachname}</Nm></Dbtr>
+      <Dbtr><Nm>${(m.eltern_vorname&&m.eltern_nachname) ? m.eltern_vorname+' '+m.eltern_nachname : m.vorname+' '+m.nachname}</Nm></Dbtr>
       <DbtrAcct><Id><IBAN>${ibanClean(m.iban)}</IBAN></Id></DbtrAcct>
       <RmtInf><Ustrd>Mitgliedsbeitrag ${JAHR} ${name} ${m._key.slice(-6)}</Ustrd></RmtInf>
     </DrctDbtTxInf>`).join('\n');
@@ -749,7 +765,9 @@ window.downloadCSV = function() {
 window.openModal = function(id){document.getElementById('modal-'+id).classList.add('open');};
 window.closeModal = function(id){document.getElementById('modal-'+id).classList.remove('open');};
 window.updateNeuBeitrag = function(){
-  document.getElementById('nBeitrag').value = beitraege[document.getElementById('nKat').value]||120;
+  const kat = document.getElementById('nKat').value;
+  document.getElementById('nBeitrag').value = beitraege[kat]||120;
+  document.getElementById('nElternWrap').style.display = kat==='Jugend' ? 'block' : 'none';
 };
 window.mitgliedHinzufuegen = function() {
   const v=document.getElementById('nVorname').value.trim();
@@ -766,10 +784,12 @@ window.mitgliedHinzufuegen = function() {
     iban:document.getElementById('nIban').value.trim(),
     bic:document.getElementById('nBic').value.trim(),
     mandat_datum:document.getElementById('nMandatDatum').value||today,
+    eltern_vorname:document.getElementById('nElternVorname').value.trim(),
+    eltern_nachname:document.getElementById('nElternNachname').value.trim(),
     status:'offen'
   });
   closeModal('neu');
-  ['nVorname','nNachname','nEmail','nGeburt','nEintritt','nIban','nBic','nMandatDatum'].forEach(i=>document.getElementById(i).value='');
+  ['nVorname','nNachname','nEmail','nGeburt','nEintritt','nIban','nBic','nMandatDatum','nElternVorname','nElternNachname'].forEach(i=>document.getElementById(i).value='');
   toast(`✓ ${v} ${n} aufgenommen`);
 };
 window.openEdit = function(key) {
@@ -783,6 +803,12 @@ window.openEdit = function(key) {
   document.getElementById('eKat').value=m.kat||'Aktiv';
   document.getElementById('eBeitrag').value=m.beitrag||0;
   document.getElementById('eStatus').value=m.status||'offen';
+  document.getElementById('eElternVorname').value=m.eltern_vorname||'';
+  document.getElementById('eElternNachname').value=m.eltern_nachname||'';
+  document.getElementById('eElternWrap').style.display = m.kat==='Jugend' ? 'block' : 'none';
+  document.getElementById('eKat').onchange = function() {
+    document.getElementById('eElternWrap').style.display = this.value==='Jugend' ? 'block' : 'none';
+  };
   openModal('edit');
 };
 window.mitgliedSpeichern = function() {
@@ -798,6 +824,8 @@ window.mitgliedSpeichern = function() {
     iban:document.getElementById('eIban').value.trim(),
     bic:document.getElementById('eBic').value.trim(),
     mandat_datum:document.getElementById('eMandatDatum').value||'',
+    eltern_vorname:document.getElementById('eElternVorname').value.trim(),
+    eltern_nachname:document.getElementById('eElternNachname').value.trim(),
     status:document.getElementById('eStatus').value
   });
   closeModal('edit'); toast('✓ Gespeichert');
