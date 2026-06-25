@@ -290,8 +290,8 @@
       <!-- SEPA -->
       <div class="page" id="page-sepa">
         <div class="hinweis">
-          <strong>Vor dem ersten Export ausfüllen</strong>
-          Ersetzen Sie die Gläubiger-ID und prüfen Sie die Vereins-IBAN. Die XML-Datei direkt im Online-Banking der Sparkasse hochladen.
+          <strong>⚠ Erster Lastschrifteinzug — bitte beachten</strong>
+          Da noch nie eingezogen wurde, wählen Sie unbedingt <strong>Erstlastschrift (FRST)</strong> — das ist für jeden Kontoinhaber der erste Einzug. Die Datei muss mindestens <strong>5 Bankarbeitstage</strong> vor dem Fälligkeitsdatum bei der Sparkasse eingereicht werden. Ab dem zweiten Quartal wechseln Sie auf Folgelastschrift (RCUR).
         </div>
         <div class="card" style="margin-bottom:20px">
           <div class="card-header"><h3>Vereinskonfiguration</h3></div>
@@ -308,8 +308,8 @@
               <div class="field"><label>Fälligkeitsdatum</label><input type="date" id="cfgFaellig"></div>
               <div class="field"><label>Einzugsart</label>
                 <select id="cfgSeqTp">
-                  <option value="RCUR">Folgelastschrift (RCUR) – Standard</option>
-                  <option value="FRST">Erstlastschrift (FRST)</option>
+                  <option value="FRST">Erstlastschrift (FRST) — erster Einzug ← jetzt wählen</option>
+                  <option value="RCUR">Folgelastschrift (RCUR) — ab 2. Quartal</option>
                 </select>
               </div>
             </div>
@@ -332,7 +332,7 @@
           <div id="sepaListe"></div>
           <div class="summary-bar">
             <div><div class="lbl">Gesamtbetrag</div><div class="total" id="sepaSumme">0,00 €</div></div>
-            <div style="font-size:11px;color:var(--grau-5)">mind. 2 Bankarbeitstage vor Fälligkeit einreichen</div>
+            <div style="font-size:11px;color:var(--grau-5)">FRST: mind. 5 Bankarbeitstage vor Fälligkeit einreichen</div>
           </div>
         </div>
       </div>
@@ -711,7 +711,7 @@ function renderSepa() {
   document.getElementById('sepaAnzahl').textContent = offen.length;
   document.getElementById('sepaSumme').textContent = fmtEuro(sum);
   if(!document.getElementById('cfgFaellig').value) {
-    const d=new Date(); d.setDate(d.getDate()+8);
+    const d=new Date(); d.setDate(d.getDate()+14);
     document.getElementById('cfgFaellig').value=d.toISOString().split('T')[0];
   }
   const el = document.getElementById('sepaListe');
