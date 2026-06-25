@@ -705,33 +705,44 @@ window.alleAlsOffen = function() {
 };
 
 // ── SEPA ──
-// Berechnet wie viele Monate seit Eintritt noch nicht abgerechnet wurden
-// und gibt den Gesamtbetrag für den ersten Einzug zurück
+// Berechnet den Betrag für den ersten Einzug:
+// Alle Monate vom Eintritt bis zum Ende des aktuellen Quartals (inkl.)
+// werden als Nachberechnung erfasst, das laufende Quartal ist bereits drin.
 function berechneErsterEinzug(m, faelligDatum) {
   const monatsBeitrag = beitraege[m.kat] || 0;
-  if(!m.eintritt || !faelligDatum) return { quartal: monatsBeitrag*3, nachberechnung: 0, monate: 0 };
+  if(!m.eintritt || !faelligDatum) return { quartal: monatsBeitrag*3, nachberechnung: 0, monate: 0, gesamt: monatsBeitrag*3 };
 
   const eintritt = new Date(m.eintritt);
   const faellig  = new Date(faelligDatum);
 
-  // Erstes volles Quartal: das Quartal in dem das Fälligkeitsdatum liegt
-  // z.B. Fälligkeit April → Quartal Apr-Jun
-  const quartalMonat = Math.floor(faellig.getMonth() / 3) * 3; // 0, 3, 6, oder 9
+  // Quartalsbeginn: erstes Monat des aktuellen Quartals
+  const quartalMonat = Math.floor(faellig.getMonth() / 3) * 3; // 0, 3, 6, 9
   const quartalStart = new Date(faellig.getFullYear(), quartalMonat, 1);
+  // Quartalende: letzter Monat des Quartals
+  const quartalEndMonat = quartalMonat + 2; // z.B. Juni (5) für Q2
 
-  // Wie viele Monate zwischen Eintritt und Quartalstart wurden noch nicht bezahlt?
+  // Eintrittsmonate VOR dem aktuellen Quartal → Nachberechnung
   let nachMonate = 0;
   if(eintritt < quartalStart) {
-    // Monate vom Eintrittsdatum bis zum Quartalstart
     nachMonate = (quartalStart.getFullYear() - eintritt.getFullYear()) * 12
                + (quartalStart.getMonth() - eintritt.getMonth());
-    // Wenn der Eintritt nicht am 1. war, zählt der Eintrittmonat voll
     nachMonate = Math.max(0, nachMonate);
   }
 
-  const nachbetrag = Math.round(monatsBeitrag * nachMonate * 100) / 100;
-  const quartalBetrag = monatsBeitrag * 3;
-  return { quartal: quartalBetrag, nachberechnung: nachbetrag, monate: nachMonate };
+  // Wenn Eintritt INNERHALB des aktuellen Quartals liegt:
+  // nur die verbleibenden Monate des Quartals berechnen, kein volles Quartal
+  let quartalAnteil = 3;
+  if(eintritt >= quartalStart) {
+    // Monate vom Eintrittmonat bis Quartalende (inkl.)
+    quartalAnteil = quartalEndMonat - eintritt.getMonth() + 1;
+    quartalAnteil = Math.min(3, Math.max(1, quartalAnteil));
+  }
+
+  const quartalBetrag  = Math.round(monatsBeitrag * quartalAnteil * 100) / 100;
+  const nachbetrag     = Math.round(monatsBeitrag * nachMonate * 100) / 100;
+  const gesamt         = quartalBetrag + nachbetrag;
+
+  return { quartal: quartalBetrag, nachberechnung: nachbetrag, monate: nachMonate, quartalAnteil, gesamt };
 }
 
 function renderSepa() {
@@ -744,8 +755,8 @@ function renderSepa() {
 
   // Gesamtsumme inkl. Nachberechnung und Passgebühr
   const sum = offen.reduce((a,m)=>{
-    const {quartal,nachberechnung} = berechneErsterEinzug(m, faellig);
-    return a + quartal + nachberechnung + (m.passgebuehr ? +beitraege.Passgebuehr : 0);
+    const {gesamt} = berechneErsterEinzug(m, faellig);
+    return a + gesamt + (m.passgebuehr ? +beitraege.Passgebuehr : 0);
   }, 0);
 
   document.getElementById('sepaAnzahl').textContent = offen.length;
@@ -754,13 +765,13 @@ function renderSepa() {
   const el = document.getElementById('sepaListe');
   if(!offen.length){el.innerHTML=`<div class="empty"><p>Keine offenen Beiträge mit IBAN.</p></div>`;return;}
   el.innerHTML='<div class="sepa-list">'+offen.map(m=>{
-    const {quartal,nachberechnung,monate} = berechneErsterEinzug(m, faellig);
-    const gesamt = quartal + nachberechnung + (m.passgebuehr ? +beitraege.Passgebuehr : 0);
+    const {quartal,nachberechnung,monate,quartalAnteil,gesamt} = berechneErsterEinzug(m, faellig);
     const details = [
-      `${fmtEuro(quartal)} Quartal`,
+      `${fmtEuro(quartal)} (${quartalAnteil} Mon. lfd. Quartal)`,
       nachberechnung > 0 ? `<span style="color:var(--amber)">+ ${fmtEuro(nachberechnung)} Nachber. (${monate} Mon.)</span>` : '',
       m.passgebuehr ? `<span style="color:var(--amber)">+ ${fmtEuro(beitraege.Passgebuehr)} Pass</span>` : ''
     ].filter(Boolean).join(' · ');
+    const gesamtAnzeige = gesamt + (m.passgebuehr ? +beitraege.Passgebuehr : 0);
     return `
     <div class="sepa-item">
       <div class="avatar" style="background:${farbe(m._key)};width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${ini(m.vorname,m.nachname)}</div>
@@ -771,7 +782,7 @@ function renderSepa() {
         <div class="iban-txt">${ibanClean(m.iban)} · ${m.bic||'–'}</div>
         <div style="font-size:11px;color:var(--grau-5);margin-top:2px">Eintritt: ${m.eintritt||'–'} · ${details}</div>
       </div>
-      <div class="sepa-betrag" style="font-size:16px">${fmtEuro(gesamt)}</div>
+      <div class="sepa-betrag" style="font-size:16px">${fmtEuro(gesamtAnzeige)}</div>
     </div>`;
   }).join('')+'</div>';
 }
@@ -791,8 +802,7 @@ window.exportSEPA = function() {
     const dbtrName = (m.eltern_vorname&&m.eltern_nachname)
       ? m.eltern_vorname+' '+m.eltern_nachname
       : m.vorname+' '+m.nachname;
-    const {quartal, nachberechnung, monate} = berechneErsterEinzug(m, faellig);
-    const gesamtBetrag = quartal + nachberechnung;
+    const {quartal, nachberechnung, monate, gesamt: gesamtBetrag} = berechneErsterEinzug(m, faellig);
 
     // Quartalsbeitrag + Nachberechnung in einer Transaktion
     txList.push({
