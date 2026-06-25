@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FC Kickers Leer – Mitgliederverwaltung</title>
+<style>
+  :root {
+    --gruen: #1a5c2e;
+    --gruen-mid: #2d7a47;
+    --gruen-hell: #e8f5ee;
+    --gruen-rand: #b8ddc8;
+    --weiss: #ffffff;
+    --grau-0: #f8f9fa;
+    --grau-1: #f1f3f5;
+    --grau-2: #e9ecef;
+    --grau-3: #dee2e6;
+    --grau-5: #adb5bd;
+    --grau-7: #495057;
+    --grau-9: #212529;
+    --rot: #c0392b;
+    --rot-hell: #fdecea;
+    --amber: #d97706;
+    --amber-hell: #fef3c7;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: var(--grau-9); background: var(--grau-0); min-height: 100vh; }
+
+  /* ── LAYOUT ── */
+  .sidebar { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: var(--gruen); display: flex; flex-direction: column; z-index: 100; }
+  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,.12); }
+  .sidebar-logo .badge { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; letter-spacing: .5px; margin-bottom: 12px; }
+  .sidebar-logo h1 { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.3; }
+  .sidebar-logo p { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; }
+  nav { padding: 12px 0; flex: 1; }
+  nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: rgba(255,255,255,.7); font-size: 13px; font-weight: 500; cursor: pointer; border-left: 3px solid transparent; transition: all .15s; text-decoration: none; }
+  nav a:hover { color: #fff; background: rgba(255,255,255,.08); }
+  nav a.active { color: #fff; background: rgba(255,255,255,.12); border-left-color: #fff; }
+  nav a svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.12); font-size: 11px; color: rgba(255,255,255,.4); }
+
+  .main { margin-left: 220px; min-height: 100vh; }
+  .topbar { background: var(--weiss); border-bottom: 1px solid var(--grau-3); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+  .topbar h2 { font-size: 16px; font-weight: 600; }
+  .topbar .year-badge { background: var(--gruen-hell); color: var(--gruen); font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+  .content { padding: 28px 32px; }
+
+  /* ── STATS ── */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat { background: var(--weiss); border: 1px solid var(--grau-3); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow); }
+  .stat .label { font-size: 11px; font-weight: 600; color: var(--grau-5); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+  .stat .val { font-size: 28px; font-weight: 700; line-height: 1; }
+  .stat .val.gruen { color: var(--gruen); }
+  .stat .val.rot { color: var(--rot); }
+  .stat .sub { font-size: 11px; color: var(--grau-5); margin-top: 6px; }
+
+  /* ── CARD ── */
+  .card { background: var(--weiss); border: 1px solid var(--grau-3); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--grau-2); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .card-header h3 { font-size: 14px; font-weight: 600; }
+  .card-body { padding: 20px; }
+
+  /* ── TOOLBAR ── */
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .search-wrap { position: relative; flex: 1; min-width: 180px; }
+  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--grau-5); width: 14px; height: 14px; pointer-events: none; }
+  input[type=text], input[type=email], input[type=date], input[type=number], select {
+    height: 36px; border: 1px solid var(--grau-3); border-radius: var(--radius); padding: 0 10px; font-size: 13px; color: var(--grau-9); background: var(--weiss); outline: none; transition: border-color .15s; width: 100%;
+  }
+  .search-wrap input { padding-left: 32px; }
+  input:focus, select:focus { border-color: var(--gruen); box-shadow: 0 0 0 3px rgba(26,92,46,.1); }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23adb5bd'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; cursor: pointer; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--grau-3); background: var(--weiss); color: var(--grau-7); transition: all .15s; white-space: nowrap; }
+  .btn:hover { background: var(--grau-1); border-color: var(--grau-5); }
+  .btn:active { transform: scale(.98); }
+  .btn svg { width: 14px; height: 14px; }
+  .btn-primary { background: var(--gruen); color: #fff; border-color: var(--gruen); }
+  .btn-primary:hover { background: var(--gruen-mid); border-color: var(--gruen-mid); }
+  .btn-danger { color: var(--rot); border-color: #f5c6c3; }
+  .btn-danger:hover { background: var(--rot-hell); }
+  .btn-sm { height: 30px; padding: 0 10px; font-size: 12px; }
+  .btn-amber { background: var(--amber); color: #fff; border-color: var(--amber); }
+  .btn-amber:hover { background: #b45309; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; color: var(--grau-5); text-transform: uppercase; letter-spacing: .5px; background: var(--grau-0); border-bottom: 1px solid var(--grau-2); white-space: nowrap; }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--grau-2); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--grau-0); }
+
+  .name-cell { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .name-cell .nm { font-weight: 600; font-size: 13px; }
+  .name-cell .em { font-size: 11px; color: var(--grau-5); }
+
+  /* ── BADGES ── */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-gruen { background: var(--gruen-hell); color: #145226; }
+  .badge-rot { background: var(--rot-hell); color: #7f1d1d; }
+  .badge-amber { background: var(--amber-hell); color: #92400e; }
+  .badge-blau { background: #eff6ff; color: #1e40af; }
+  .badge-lila { background: #f5f3ff; color: #5b21b6; }
+  .badge-grau { background: var(--grau-1); color: var(--grau-7); }
+  .badge-pink { background: #fdf2f8; color: #831843; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+  /* ── MODAL ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--weiss); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .modal-head { padding: 20px 24px 16px; border-bottom: 1px solid var(--grau-2); display: flex; align-items: center; justify-content: space-between; }
+  .modal-head h3 { font-size: 16px; font-weight: 600; }
+  .modal-close { background: none; border: none; cursor: pointer; color: var(--grau-5); padding: 4px; border-radius: 6px; }
+  .modal-close:hover { background: var(--grau-1); }
+  .modal-body { padding: 20px 24px; }
+  .modal-foot { padding: 16px 24px; border-top: 1px solid var(--grau-2); display: flex; gap: 10px; justify-content: flex-end; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--grau-7); margin-bottom: 5px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-hint { font-size: 11px; color: var(--grau-5); margin-top: 4px; }
+
+  /* ── SEPA SECTION ── */
+  .sepa-list { display: flex; flex-direction: column; gap: 1px; }
+  .sepa-item { display: flex; align-items: center; gap: 14px; padding: 14px 20px; background: var(--weiss); border-bottom: 1px solid var(--grau-2); transition: background .1s; }
+  .sepa-item:last-child { border-bottom: none; }
+  .sepa-item:hover { background: var(--grau-0); }
+  .sepa-info { flex: 1; min-width: 0; }
+  .sepa-info .nm { font-weight: 600; font-size: 13px; }
+  .sepa-info .iban { font-size: 11px; color: var(--grau-5); font-family: monospace; margin-top: 2px; }
+  .sepa-betrag { font-size: 15px; font-weight: 700; color: var(--grau-9); text-align: right; }
+  .sepa-betrag .period { font-size: 10px; font-weight: 400; color: var(--grau-5); display: block; }
+
+  .sepa-config { background: var(--gruen-hell); border: 1px solid var(--gruen-rand); border-radius: var(--radius); padding: 16px; margin-bottom: 20px; }
+  .sepa-config h4 { font-size: 13px; font-weight: 600; color: var(--gruen); margin-bottom: 12px; }
+  .sepa-config .cfg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sepa-config label { font-size: 11px; font-weight: 600; color: #145226; display: block; margin-bottom: 4px; }
+  .sepa-config input { background: #fff; border-color: var(--gruen-rand); }
+  .sepa-config input:focus { border-color: var(--gruen); }
+
+  /* ── EMPTY / TOAST ── */
+  .empty { text-align: center; padding: 48px 20px; color: var(--grau-5); }
+  .empty svg { width: 40px; height: 40px; margin: 0 auto 12px; display: block; opacity: .4; }
+  .empty p { font-size: 14px; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--grau-9); color: #fff; padding: 12px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-md); z-index: 300; opacity: 0; transform: translateY(8px); transition: all .25s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HINWEIS BOX ── */
+  .hinweis { background: var(--amber-hell); border: 1px solid #fcd34d; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px; font-size: 13px; color: #78350f; }
+  .hinweis strong { display: block; margin-bottom: 4px; }
+
+  .section-sep { border: none; border-top: 1px solid var(--grau-2); margin: 24px 0; }
+
+  .summary-bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: var(--grau-0); border-top: 1px solid var(--grau-2); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+  .summary-bar .total { font-weight: 700; font-size: 15px; }
+  .summary-bar .lbl { font-size: 11px; color: var(--grau-5); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="badge">FCK</div>
+    <h1>FC Kickers Leer</h1>
+    <p>Mitgliederverwaltung</p>
+  </div>
+  <nav>
+    <a class="active" onclick="showPage('mitglieder')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Mitglieder
+    </a>
+    <a onclick="showPage('einzug')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Beitragseinzug
+    </a>
+    <a onclick="showPage('sepa')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      SEPA-Export
+    </a>
+    <a onclick="showPage('einstellungen')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Einstellungen
+    </a>
+  </nav>
+  <div class="sidebar-footer">Version 1.0 · Saison <span id="sidebarJahr"></span></div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <h2 id="pageTitle">Mitglieder</h2>
+    <span class="year-badge" id="topbarJahr"></span>
+  </div>
+  <div class="content">
+
+    <!-- ══ SEITE: MITGLIEDER ══ -->
+    <div class="page active" id="page-mitglieder">
+      <div class="stats" id="statsRow"></div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Alle Mitglieder</h3>
+          <div class="toolbar">
+            <div class="search-wrap">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="searchInput" placeholder="Name oder E-Mail suchen…" oninput="renderMitglieder()">
+            </div>
+            <select id="filterKat" onchange="renderMitglieder()" style="width:160px">
+              <option value="">Alle Kategorien</option>
+              <option>Aktiv</option><option>Passiv</option><option>Jugend</option><option>Fördermitglied</option>
+            </select>
+            <select id="filterStatus" onchange="renderMitglieder()" style="width:140px">
+              <option value="">Alle Status</option>
+              <option value="bezahlt">Bezahlt</option>
+              <option value="offen">Offen</option>
+            </select>
+            <button class="btn btn-primary" onclick="openModal('neu')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Neues Mitglied
+            </button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Mitglied</th><th>Nr.</th><th>Kategorie</th><th>Beitrag/Jahr</th><th>Status</th><th>Aktionen</th>
+            </tr></thead>
+            <tbody id="memberTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEITE: EINZUG ══ -->
+    <div class="page" id="page-einzug">
+      <div class="stats" id="statsRowEinzug"></div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Offene Beiträge <span id="einzugJahr" style="color:var(--grau-5);font-weight:400"></span></h3>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="alleAlsOffen()">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.78"/></svg>
+              Alle zurücksetzen
+            </button>
+            <button class="btn btn-primary" onclick="alleAlsBezahlt()">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Alle als eingezogen
+            </button>
+          </div>
+        </div>
+        <div id="einzugListe"></div>
+        <div class="summary-bar">
+          <div><div class="lbl">Ausstehend</div><div class="total" id="einzugSumme">0,00 €</div></div>
+          <button class="btn btn-amber" onclick="showPage('sepa')">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            SEPA-Datei erstellen
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEITE: SEPA ══ -->
+    <div class="page" id="page-sepa">
+      <div class="hinweis">
+        <strong>⚠ Bitte vor dem ersten Export ausfüllen</strong>
+        Ersetzen Sie die Gläubiger-ID und prüfen Sie die Vereins-IBAN. Die XML-Datei kann direkt im Online-Banking der Sparkasse Leer-Wittmund hochgeladen werden.
+      </div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><h3>Vereinskonfiguration</h3></div>
+        <div class="card-body">
+          <div class="field-row">
+            <div class="field"><label>Vereinsname</label><input type="text" id="cfgName" value="FC Kickers Leer e.V."></div>
+            <div class="field"><label>Gläubiger-ID</label><input type="text" id="cfgGlId" value="DE98ZZZ09999999999"><div class="field-hint">Bei der Bundesbank beantragen: bundesbank.de</div></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Vereins-IBAN</label><input type="text" id="cfgIban" value="DE12500105170648489890"></div>
+            <div class="field"><label>Vereins-BIC</label><input type="text" id="cfgBic" value="NOLADE21LER"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Fälligkeitsdatum</label><input type="date" id="cfgFaellig"></div>
+            <div class="field"><label>Einzugsart</label>
+              <select id="cfgSeqTp">
+                <option value="RCUR">Folgelastschrift (RCUR) – Standard</option>
+                <option value="FRST">Erstlastschrift (FRST)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Mitglieder im Einzug (<span id="sepaAnzahl">0</span>)</h3>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="downloadExcel()">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Als CSV speichern
+            </button>
+            <button class="btn btn-primary" onclick="exportSEPA()">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              SEPA XML herunterladen
+            </button>
+          </div>
+        </div>
+        <div id="sepaListe"></div>
+        <div class="summary-bar">
+          <div><div class="lbl">Gesamtbetrag Einzug</div><div class="total" id="sepaSumme">0,00 €</div></div>
+          <div style="font-size:11px;color:var(--grau-5)">mind. 2 Bankarbeitstage vor Fälligkeit einreichen</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEITE: EINSTELLUNGEN ══ -->
+    <div class="page" id="page-einstellungen">
+      <div class="card">
+        <div class="card-header"><h3>Beitragssätze</h3></div>
+        <div class="card-body">
+          <div class="field-row">
+            <div class="field"><label>Aktiv (€/Jahr)</label><input type="number" id="setBeitragAktiv" value="120"></div>
+            <div class="field"><label>Passiv (€/Jahr)</label><input type="number" id="setBeitragPassiv" value="60"></div>
+            <div class="field"><label>Jugend (€/Jahr)</label><input type="number" id="setBeitragJugend" value="36"></div>
+            <div class="field"><label>Fördermitglied (€/Jahr)</label><input type="number" id="setBeitragFoerder" value="180"></div>
+          </div>
+          <button class="btn btn-primary" onclick="beitraegeSpeichern()">Speichern</button>
+        </div>
+      </div>
+      <div style="height:16px"></div>
+      <div class="card">
+        <div class="card-header"><h3>Daten exportieren / importieren</h3></div>
+        <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn" onclick="exportJSON()">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Mitgliederdaten sichern (JSON)
+          </button>
+          <label class="btn" style="cursor:pointer">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Daten importieren (JSON)
+            <input type="file" accept=".json" style="display:none" onchange="importJSON(event)">
+          </label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ══ MODAL: NEUES MITGLIED ══ -->
+<div class="modal-overlay" id="modal-neu">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Neues Mitglied aufnehmen</h3>
+      <button class="modal-close" onclick="closeModal('neu')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Vorname *</label><input type="text" id="nVorname" placeholder="Max"></div>
+        <div class="field"><label>Nachname *</label><input type="text" id="nNachname" placeholder="Mustermann"></div>
+      </div>
+      <div class="field"><label>E-Mail</label><input type="email" id="nEmail" placeholder="max@example.de"></div>
+      <div class="field-row">
+        <div class="field"><label>Geburtsdatum</label><input type="date" id="nGeburt"></div>
+        <div class="field"><label>Eintrittsdatum</label><input type="date" id="nEintritt"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Kategorie</label>
+          <select id="nKat" onchange="updateNeuBeitrag()">
+            <option>Aktiv</option><option>Passiv</option><option>Jugend</option><option>Fördermitglied</option>
+          </select>
+        </div>
+        <div class="field"><label>Jahresbeitrag (€)</label><input type="number" id="nBeitrag" value="120"></div>
+      </div>
+      <div class="field"><label>IBAN</label><input type="text" id="nIban" placeholder="DE89 3704 0044 0532 0130 00"></div>
+      <div class="field"><label>BIC</label><input type="text" id="nBic" placeholder="NOLADE21LER"></div>
+      <div class="field"><label>Mandat-Datum (SEPA-Unterschrift)</label><input type="date" id="nMandatDatum"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('neu')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="mitgliedHinzufuegen()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+        Aufnehmen
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: BEARBEITEN ══ -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Mitglied bearbeiten</h3>
+      <button class="modal-close" onclick="closeModal('edit')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="eId">
+      <div class="field-row">
+        <div class="field"><label>Vorname *</label><input type="text" id="eVorname"></div>
+        <div class="field"><label>Nachname *</label><input type="text" id="eNachname"></div>
+      </div>
+      <div class="field"><label>E-Mail</label><input type="email" id="eEmail"></div>
+      <div class="field-row">
+        <div class="field"><label>Geburtsdatum</label><input type="date" id="eGeburt"></div>
+        <div class="field"><label>Eintrittsdatum</label><input type="date" id="eEintritt"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Kategorie</label>
+          <select id="eKat">
+            <option>Aktiv</option><option>Passiv</option><option>Jugend</option><option>Fördermitglied</option>
+          </select>
+        </div>
+        <div class="field"><label>Jahresbeitrag (€)</label><input type="number" id="eBeitrag"></div>
+      </div>
+      <div class="field"><label>IBAN</label><input type="text" id="eIban"></div>
+      <div class="field"><label>BIC</label><input type="text" id="eBic"></div>
+      <div class="field"><label>Mandat-Datum</label><input type="date" id="eMandatDatum"></div>
+      <div class="field"><label>Zahlungsstatus</label>
+        <select id="eStatus">
+          <option value="offen">Offen</option>
+          <option value="bezahlt">Bezahlt</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('edit')">Abbrechen</button>
+      <button class="btn btn-primary" onclick="mitgliedSpeichern()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+        Speichern
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const JAHR = new Date().getFullYear();
+document.getElementById('sidebarJahr').textContent = JAHR;
+document.getElementById('topbarJahr').textContent = 'Saison ' + JAHR;
+document.getElementById('einzugJahr').textContent = JAHR;
+
+const AVATARFARBEN = ['#1a5c2e','#185FA5','#6d3f99','#b45309','#be3a3a','#0d7490','#166534'];
+function avatarFarbe(id){ return AVATARFARBEN[id % AVATARFARBEN.length]; }
+function initials(v,n){ return ((v||'')[0]||'').toUpperCase() + ((n||'')[0]||'').toUpperCase(); }
+function fmtEuro(n){ return n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'; }
+function ibanFmt(s){ return (s||'').replace(/\s/g,''); }
+
+let beitraege = {Aktiv:120,Passiv:60,Jugend:36,'Fördermitglied':180};
+
+let members = JSON.parse(localStorage.getItem('kickers_members') || 'null') || [
+  {id:1,vorname:'Klaus',nachname:'Müller',email:'k.mueller@example.de',kat:'Aktiv',beitrag:120,iban:'DE89370400440532013000',bic:'BELADEBEXXX',mandat_datum:'2018-03-12',eintritt:'2018-03-12',geburt:'',status:'bezahlt'},
+  {id:2,vorname:'Andrea',nachname:'Schmidt',email:'a.schmidt@example.de',kat:'Aktiv',beitrag:120,iban:'DE21700519950952791788',bic:'SSKMDEMMXXX',mandat_datum:'2020-07-01',eintritt:'2020-07-01',geburt:'',status:'offen'},
+  {id:3,vorname:'Tom',nachname:'Janssen',email:'t.janssen@example.de',kat:'Jugend',beitrag:36,iban:'DE75512108001245126199',bic:'SSKMDEMMXXX',mandat_datum:'2022-09-15',eintritt:'2022-09-15',geburt:'',status:'offen'},
+  {id:4,vorname:'Brigitte',nachname:'Kramer',email:'b.kramer@example.de',kat:'Passiv',beitrag:60,iban:'DE91100000000123456789',bic:'SSKMDEMMXXX',mandat_datum:'2015-01-20',eintritt:'2015-01-20',geburt:'',status:'bezahlt'},
+  {id:5,vorname:'Markus',nachname:'Becker',email:'m.becker@example.de',kat:'Fördermitglied',beitrag:180,iban:'DE12500105170648489890',bic:'BELADEBEXXX',mandat_datum:'2019-05-08',eintritt:'2019-05-08',geburt:'',status:'offen'},
+  {id:6,vorname:'Lisa',nachname:'Wulf',email:'l.wulf@example.de',kat:'Jugend',beitrag:36,iban:'DE75512108001245126199',bic:'SSKMDEMMXXX',mandat_datum:'2023-04-01',eintritt:'2023-04-01',geburt:'',status:'bezahlt'},
+  {id:7,vorname:'Peter',nachname:'Teiken',email:'p.teiken@example.de',kat:'Aktiv',beitrag:120,iban:'DE91100000000987654321',bic:'SSKMDEMMXXX',mandat_datum:'2016-08-14',eintritt:'2016-08-14',geburt:'',status:'offen'},
+];
+let nextId = Math.max(...members.map(m=>m.id)) + 1;
+
+function save(){ localStorage.setItem('kickers_members', JSON.stringify(members)); }
+
+// ── NAVIGATION ──
+const titles = {mitglieder:'Mitglieder',einzug:'Beitragseinzug',sepa:'SEPA-Export',einstellungen:'Einstellungen'};
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('nav a')[['mitglieder','einzug','sepa','einstellungen'].indexOf(p)].classList.add('active');
+  document.getElementById('pageTitle').textContent = titles[p];
+  if(p==='einzug') renderEinzug();
+  if(p==='sepa') renderSepa();
+}
+
+// ── TOAST ──
+function toast(msg, dur=2800){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+// ── STATS ──
+function renderStats(){
+  const total = members.length;
+  const bezahlt = members.filter(m=>m.status==='bezahlt').length;
+  const offen = members.filter(m=>m.status==='offen').length;
+  const einnahmen = members.filter(m=>m.status==='bezahlt').reduce((a,m)=>a+m.beitrag,0);
+  const ausstehend = members.filter(m=>m.status==='offen').reduce((a,m)=>a+m.beitrag,0);
+  const html = `
+    <div class="stat"><div class="label">Mitglieder gesamt</div><div class="val">${total}</div><div class="sub">Saison ${JAHR}</div></div>
+    <div class="stat"><div class="label">Beiträge bezahlt</div><div class="val gruen">${bezahlt}</div><div class="sub">von ${total}</div></div>
+    <div class="stat"><div class="label">Noch offen</div><div class="val rot">${offen}</div><div class="sub">${fmtEuro(ausstehend)} ausstehend</div></div>
+    <div class="stat"><div class="label">Einnahmen ${JAHR}</div><div class="val">${fmtEuro(einnahmen)}</div><div class="sub">eingegangen</div></div>
+  `;
+  document.getElementById('statsRow').innerHTML = html;
+  document.getElementById('statsRowEinzug').innerHTML = html;
+}
+
+// ── KAT BADGE ──
+const katCls = {Aktiv:'badge-blau',Passiv:'badge-grau',Jugend:'badge-lila','Fördermitglied':'badge-pink'};
+function katBadge(k){ return `<span class="badge ${katCls[k]||'badge-grau'}">${k}</span>`; }
+function statusBadge(s){
+  if(s==='bezahlt') return '<span class="badge badge-gruen"><span class="dot" style="background:#1a5c2e"></span>Bezahlt</span>';
+  return '<span class="badge badge-rot"><span class="dot" style="background:#c0392b"></span>Offen</span>';
+}
+
+// ── MITGLIEDER LISTE ──
+function renderMitglieder(){
+  renderStats();
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  const fk = document.getElementById('filterKat').value;
+  const fs = document.getElementById('filterStatus').value;
+  const rows = members.filter(m=>{
+    const txt = (m.vorname+' '+m.nachname+' '+m.email).toLowerCase();
+    return txt.includes(q) && (!fk||m.kat===fk) && (!fs||m.status===fs);
+  });
+  const tbody = document.getElementById('memberTable');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>Keine Mitglieder gefunden.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(m=>`
+    <tr>
+      <td><div class="name-cell">
+        <div class="avatar" style="background:${avatarFarbe(m.id)}">${initials(m.vorname,m.nachname)}</div>
+        <div><div class="nm">${m.vorname} ${m.nachname}</div><div class="em">${m.email||'–'}</div></div>
+      </div></td>
+      <td style="color:var(--grau-5);font-family:monospace">#${String(m.id).padStart(4,'0')}</td>
+      <td>${katBadge(m.kat)}</td>
+      <td style="font-weight:600">${fmtEuro(m.beitrag)}</td>
+      <td>${statusBadge(m.status)}</td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="toggleStatus(${m.id})" title="${m.status==='bezahlt'?'Als offen markieren':'Als bezahlt markieren'}">
+          ${m.status==='bezahlt'
+            ? '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.78"/></svg>'
+            : '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>'}
+          ${m.status==='bezahlt'?'Rücksetzen':'Bezahlt'}
+        </button>
+        <button class="btn btn-sm" onclick="openEdit(${m.id})" title="Bearbeiten">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Bearbeiten
+        </button>
+        <button class="btn btn-sm btn-danger" onclick="loeschen(${m.id})" title="Löschen">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+function toggleStatus(id){
+  const m = members.find(x=>x.id===id);
+  if(!m) return;
+  m.status = m.status==='bezahlt'?'offen':'bezahlt';
+  save(); renderMitglieder();
+  toast(m.status==='bezahlt'?'✓ Als bezahlt markiert':'Zurück auf offen gesetzt');
+}
+function loeschen(id){
+  const m = members.find(x=>x.id===id);
+  if(!confirm(`${m?.vorname} ${m?.nachname} wirklich löschen?`)) return;
+  members = members.filter(x=>x.id!==id);
+  save(); renderMitglieder(); toast('Mitglied gelöscht');
+}
+
+// ── EINZUG ──
+function renderEinzug(){
+  renderStats();
+  const offen = members.filter(m=>m.status==='offen');
+  const sum = offen.reduce((a,m)=>a+m.beitrag,0);
+  document.getElementById('einzugSumme').textContent = fmtEuro(sum);
+  const el = document.getElementById('einzugListe');
+  if(!offen.length){
+    el.innerHTML=`<div class="empty"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><p>Alle Beiträge wurden eingezogen!</p></div>`;
+    return;
+  }
+  el.innerHTML = '<div class="sepa-list">'+offen.map(m=>`
+    <div class="sepa-item">
+      <div class="avatar" style="background:${avatarFarbe(m.id)};width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${initials(m.vorname,m.nachname)}</div>
+      <div class="sepa-info">
+        <div class="nm">${m.vorname} ${m.nachname} <span style="color:var(--grau-5);font-size:11px;font-weight:400">#${String(m.id).padStart(4,'0')}</span></div>
+        <div class="iban">${ibanFmt(m.iban) || '– keine IBAN –'}</div>
+      </div>
+      ${katBadge(m.kat)}
+      <div class="sepa-betrag">${fmtEuro(m.beitrag)}<span class="period">pro Jahr</span></div>
+      <button class="btn btn-sm btn-primary" onclick="bezahltMarkieren(${m.id})">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+        Eingezogen
+      </button>
+    </div>
+  `).join('')+'</div>';
+}
+
+function bezahltMarkieren(id){
+  const m = members.find(x=>x.id===id);
+  if(m){ m.status='bezahlt'; save(); renderEinzug(); renderStats(); toast('✓ Eingezogen'); }
+}
+function alleAlsBezahlt(){
+  members.forEach(m=>m.status='bezahlt');
+  save(); renderEinzug(); renderStats(); toast(`✓ Alle ${members.length} Beiträge als eingezogen markiert`);
+}
+function alleAlsOffen(){
+  if(!confirm('Alle Beiträge auf "offen" zurücksetzen? (z.B. für neues Vereinsjahr)')) return;
+  members.forEach(m=>m.status='offen');
+  save(); renderEinzug(); renderStats(); toast('Alle Beiträge zurückgesetzt');
+}
+
+// ── SEPA ──
+function renderSepa(){
+  const offen = members.filter(m=>m.status==='offen'&&m.iban);
+  const sum = offen.reduce((a,m)=>a+m.beitrag,0);
+  document.getElementById('sepaAnzahl').textContent = offen.length;
+  document.getElementById('sepaSumme').textContent = fmtEuro(sum);
+
+  // Fälligkeitsdatum: 5 Werktage in der Zukunft
+  if(!document.getElementById('cfgFaellig').value){
+    const d = new Date(); d.setDate(d.getDate()+8);
+    document.getElementById('cfgFaellig').value = d.toISOString().split('T')[0];
+  }
+
+  const el = document.getElementById('sepaListe');
+  if(!offen.length){
+    el.innerHTML=`<div class="empty"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><p>Keine offenen Beiträge mit IBAN vorhanden.</p></div>`;
+    return;
+  }
+  el.innerHTML = '<div class="sepa-list">'+offen.map(m=>`
+    <div class="sepa-item">
+      <div class="avatar" style="background:${avatarFarbe(m.id)};width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${initials(m.vorname,m.nachname)}</div>
+      <div class="sepa-info">
+        <div class="nm">${m.vorname} ${m.nachname}</div>
+        <div class="iban">${ibanFmt(m.iban)} · ${m.bic||'–'}</div>
+      </div>
+      <div style="font-size:11px;color:var(--grau-5)">MR-${String(m.id).padStart(4,'0')}</div>
+      <div class="sepa-betrag">${fmtEuro(m.beitrag)}</div>
+    </div>
+  `).join('')+'</div>';
+}
+
+function exportSEPA(){
+  const offen = members.filter(m=>m.status==='offen'&&m.iban);
+  if(!offen.length){ toast('Keine offenen Beiträge mit IBAN vorhanden'); return; }
+  const name = document.getElementById('cfgName').value;
+  const glId  = document.getElementById('cfgGlId').value;
+  const iban  = ibanFmt(document.getElementById('cfgIban').value);
+  const bic   = document.getElementById('cfgBic').value;
+  const faellig = document.getElementById('cfgFaellig').value;
+  const seqTp = document.getElementById('cfgSeqTp').value;
+  const gesamt = offen.reduce((a,m)=>a+m.beitrag,0);
+  const now = new Date();
+  const ts = now.toISOString().replace('Z','');
+  const msgId = `KICKERS-${JAHR}-${Math.random().toString(36).substr(2,8).toUpperCase()}`;
+
+  let txs = offen.map(m=>`
+    <DrctDbtTxInf>
+      <PmtId><EndToEndId>BEITRAG-${JAHR}-${String(m.id).padStart(4,'0')}</EndToEndId></PmtId>
+      <InstdAmt Ccy="EUR">${m.beitrag.toFixed(2)}</InstdAmt>
+      <DrctDbtTx>
+        <MndtRltdInf>
+          <MndtId>MR-${String(m.id).padStart(4,'0')}</MndtId>
+          <DtOfSgntr>${m.mandat_datum||m.eintritt||JAHR+'-01-01'}</DtOfSgntr>
+        </MndtRltdInf>
+      </DrctDbtTx>
+      <DbtrAgt><FinInstnId><BIC>${m.bic||'NOTPROVIDED'}</BIC></FinInstnId></DbtrAgt>
+      <Dbtr><Nm>${m.vorname} ${m.nachname}</Nm></Dbtr>
+      <DbtrAcct><Id><IBAN>${ibanFmt(m.iban)}</IBAN></Id></DbtrAcct>
+      <RmtInf><Ustrd>Mitgliedsbeitrag ${JAHR} ${name} Mitgl.Nr. ${String(m.id).padStart(4,'0')}</Ustrd></RmtInf>
+    </DrctDbtTxInf>`).join('\n');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.003.02"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.003.02 pain.008.003.02.xsd">
+  <CstmrDrctDbtInitn>
+    <GrpHdr>
+      <MsgId>${msgId}</MsgId>
+      <CreDtTm>${ts.slice(0,19)}</CreDtTm>
+      <NbOfTxs>${offen.length}</NbOfTxs>
+      <CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
+      <InitgPty><Nm>${name}</Nm></InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PM-${JAHR}-001</PmtInfId>
+      <PmtMtd>DD</PmtMtd>
+      <NbOfTxs>${offen.length}</NbOfTxs>
+      <CtrlSum>${gesamt.toFixed(2)}</CtrlSum>
+      <PmtTpInf>
+        <SvcLvl><Cd>SEPA</Cd></SvcLvl>
+        <LclInstrm><Cd>CORE</Cd></LclInstrm>
+        <SeqTp>${seqTp}</SeqTp>
+      </PmtTpInf>
+      <ReqdColltnDt>${faellig}</ReqdColltnDt>
+      <Cdtr><Nm>${name}</Nm></Cdtr>
+      <CdtrAcct><Id><IBAN>${iban}</IBAN></Id></CdtrAcct>
+      <CdtrAgt><FinInstnId><BIC>${bic}</BIC></FinInstnId></CdtrAgt>
+      <CdtrSchmeId>
+        <Id><PrvtId><Othr>
+          <Id>${glId}</Id>
+          <SchmeNm><Prtry>SEPA</Prtry></SchmeNm>
+        </Othr></PrvtId></Id>
+      </CdtrSchmeId>
+      ${txs}
+    </PmtInf>
+  </CstmrDrctDbtInitn>
+</Document>`;
+
+  download(xml, `SEPA_Lastschrift_KickersLeer_${JAHR}.xml`, 'application/xml');
+  toast(`✓ SEPA XML heruntergeladen (${offen.length} Lastschriften, ${fmtEuro(gesamt)})`);
+}
+
+function downloadExcel(){
+  const offen = members.filter(m=>m.status==='offen');
+  if(!offen.length){ toast('Keine offenen Beiträge'); return; }
+  const headers = ['Nr.','Nachname','Vorname','E-Mail','Kategorie','Beitrag (EUR)','IBAN','BIC','Mandat-Datum','Verwendungszweck'];
+  const rows = offen.map(m=>[
+    `#${String(m.id).padStart(4,'0')}`, m.nachname, m.vorname, m.email, m.kat,
+    m.beitrag.toFixed(2), ibanFmt(m.iban), m.bic||'',
+    m.mandat_datum||'', `Mitgliedsbeitrag ${JAHR} FC Kickers Leer Mitgl.Nr. ${String(m.id).padStart(4,'0')}`
+  ]);
+  const csv = [headers, ...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  download('\uFEFF'+csv, `Beitraege_KickersLeer_${JAHR}.csv`, 'text/csv;charset=utf-8');
+  toast('✓ CSV gespeichert');
+}
+
+// ── MODAL ──
+function openModal(id){ document.getElementById('modal-'+id).classList.add('open'); }
+function closeModal(id){ document.getElementById('modal-'+id).classList.remove('open'); }
+
+function updateNeuBeitrag(){
+  const k = document.getElementById('nKat').value;
+  document.getElementById('nBeitrag').value = beitraege[k]||120;
+}
+
+function mitgliedHinzufuegen(){
+  const v = document.getElementById('nVorname').value.trim();
+  const n = document.getElementById('nNachname').value.trim();
+  if(!v||!n){ toast('Bitte Vor- und Nachname angeben'); return; }
+  const today = new Date().toISOString().split('T')[0];
+  members.push({
+    id: nextId++,
+    vorname: v, nachname: n,
+    email: document.getElementById('nEmail').value.trim(),
+    geburt: document.getElementById('nGeburt').value,
+    eintritt: document.getElementById('nEintritt').value || today,
+    kat: document.getElementById('nKat').value,
+    beitrag: parseFloat(document.getElementById('nBeitrag').value)||0,
+    iban: document.getElementById('nIban').value.trim(),
+    bic: document.getElementById('nBic').value.trim(),
+    mandat_datum: document.getElementById('nMandatDatum').value || today,
+    status: 'offen'
+  });
+  save(); closeModal('neu'); renderMitglieder();
+  ['nVorname','nNachname','nEmail','nGeburt','nEintritt','nIban','nBic','nMandatDatum'].forEach(i=>document.getElementById(i).value='');
+  updateNeuBeitrag();
+  toast(`✓ ${v} ${n} aufgenommen`);
+}
+
+function openEdit(id){
+  const m = members.find(x=>x.id===id);
+  if(!m) return;
+  document.getElementById('eId').value = m.id;
+  document.getElementById('eVorname').value = m.vorname;
+  document.getElementById('eNachname').value = m.nachname;
+  document.getElementById('eEmail').value = m.email||'';
+  document.getElementById('eGeburt').value = m.geburt||'';
+  document.getElementById('eEintritt').value = m.eintritt||'';
+  document.getElementById('eKat').value = m.kat;
+  document.getElementById('eBeitrag').value = m.beitrag;
+  document.getElementById('eIban').value = m.iban||'';
+  document.getElementById('eBic').value = m.bic||'';
+  document.getElementById('eMandatDatum').value = m.mandat_datum||'';
+  document.getElementById('eStatus').value = m.status;
+  openModal('edit');
+}
+function mitgliedSpeichern(){
+  const id = parseInt(document.getElementById('eId').value);
+  const m = members.find(x=>x.id===id);
+  if(!m) return;
+  m.vorname = document.getElementById('eVorname').value.trim();
+  m.nachname = document.getElementById('eNachname').value.trim();
+  m.email = document.getElementById('eEmail').value.trim();
+  m.geburt = document.getElementById('eGeburt').value;
+  m.eintritt = document.getElementById('eEintritt').value;
+  m.kat = document.getElementById('eKat').value;
+  m.beitrag = parseFloat(document.getElementById('eBeitrag').value)||0;
+  m.iban = document.getElementById('eIban').value.trim();
+  m.bic = document.getElementById('eBic').value.trim();
+  m.mandat_datum = document.getElementById('eMandatDatum').value;
+  m.status = document.getElementById('eStatus').value;
+  save(); closeModal('edit'); renderMitglieder(); toast('✓ Gespeichert');
+}
+
+// ── EINSTELLUNGEN ──
+function beitraegeSpeichern(){
+  beitraege.Aktiv = parseFloat(document.getElementById('setBeitragAktiv').value)||120;
+  beitraege.Passiv = parseFloat(document.getElementById('setBeitragPassiv').value)||60;
+  beitraege.Jugend = parseFloat(document.getElementById('setBeitragJugend').value)||36;
+  beitraege['Fördermitglied'] = parseFloat(document.getElementById('setBeitragFoerder').value)||180;
+  localStorage.setItem('kickers_beitraege', JSON.stringify(beitraege));
+  toast('✓ Beitragssätze gespeichert');
+}
+function exportJSON(){
+  download(JSON.stringify({members,beitraege,exportDatum:new Date().toISOString()},null,2),
+    `Mitglieder_KickersLeer_${JAHR}.json`,'application/json');
+  toast('✓ Daten gesichert');
+}
+function importJSON(e){
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      if(!Array.isArray(d.members)) throw new Error('Ungültiges Format');
+      if(!confirm(`${d.members.length} Mitglieder importieren und aktuelle Daten ersetzen?`)) return;
+      members = d.members;
+      nextId = Math.max(...members.map(m=>m.id))+1;
+      if(d.beitraege) beitraege = d.beitraege;
+      save(); renderMitglieder(); toast(`✓ ${members.length} Mitglieder importiert`);
+    } catch(err){ toast('Fehler beim Import: '+err.message); }
+  };
+  r.readAsText(file);
+  e.target.value='';
+}
+
+// ── DOWNLOAD HELPER ──
+function download(content, filename, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type}));
+  a.download = filename; a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── INIT ──
+const savedBeitraege = localStorage.getItem('kickers_beitraege');
+if(savedBeitraege) beitraege = JSON.parse(savedBeitraege);
+document.getElementById('setBeitragAktiv').value = beitraege.Aktiv;
+document.getElementById('setBeitragPassiv').value = beitraege.Passiv;
+document.getElementById('setBeitragJugend').value = beitraege.Jugend;
+document.getElementById('setBeitragFoerder').value = beitraege['Fördermitglied'];
+renderMitglieder();
+
+// Modals schließen bei Klick außen
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
